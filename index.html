@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Siaga: Misi Penyelamatan Bumi</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%8F%3C/text%3E%3C/svg%3E" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Nunito', sans-serif;
+        background-color: #f0f9ff;
+      }
+      h1, h2, h3, h4, .font-display {
+        font-family: 'Fredoka', sans-serif;
+      }
+      .wiggle {
+        animation: wiggle 0.5s ease-in-out infinite;
+      }
+      @keyframes wiggle {
+        0%, 100% { transform: rotate(-3deg); }
+        50% { transform: rotate(3deg); }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.4/",
+    "react": "https://esm.sh/react@^19.2.4",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.563.0",
+    "framer-motion": "https://esm.sh/framer-motion@^12.34.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+    <!-- Prefetch the earthquake-level sprites so they are cached before the player
+         reaches that level. Over a slow LAN (e.g. opening via 192.168.x.x on a
+         phone) the un-cached large PNGs load late, which shows up as the run
+         animation stuck on frame 1 and the hide sprite popping in bigger. -->
+    <link rel="prefetch" as="image" href="/assets/player-idle.png">
+    <link rel="prefetch" as="image" href="/assets/player-run-1.png">
+    <link rel="prefetch" as="image" href="/assets/player-run-2.png">
+    <link rel="prefetch" as="image" href="/assets/player-panic.png">
+    <link rel="prefetch" as="image" href="/assets/player-hide.png">
+    <link rel="prefetch" as="image" href="/assets/table.png">
+    <link rel="prefetch" as="image" href="/assets/corridor-bg.jpg">
+    <link rel="prefetch" as="image" href="/assets/exit-hallway-bg.png">
+    <!-- Flood & Volcano assets -->
+    <link rel="prefetch" as="image" href="/assets/city-road-bg.png">
+    <link rel="prefetch" as="image" href="/assets/wave-1.png">
+    <link rel="prefetch" as="image" href="/assets/wave-2.png">
+    <link rel="prefetch" as="image" href="/assets/building.png">
+    <link rel="prefetch" as="image" href="/assets/kapten-idle.png">
+    <link rel="prefetch" as="image" href="/assets/kapten-success.png">
+    <link rel="prefetch" as="image" href="/assets/kapten-error.png">
+    <!-- Volcano Fase 1 (kenali tanda erupsi) assets -->
+    <link rel="prefetch" as="image" href="/assets/volcano-bg.png">
+    <link rel="prefetch" as="image" href="/assets/volcano-smoke.png">
+    <link rel="prefetch" as="image" href="/assets/volcano-crack.png">
+    <link rel="prefetch" as="image" href="/assets/panic-birds.png">
+    <link rel="prefetch" as="image" href="/assets/check.png">
+    <!-- Volcano Fase 2 (hindari batuan + evakuasi mobil) assets -->
+    <link rel="prefetch" as="image" href="/assets/volcano-rock.png">
+    <link rel="prefetch" as="image" href="/assets/rescue-car.png">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
