@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   getSql, initializeDatabase, readCookie, sendJson, teacherClasses, verifySession,
-} from '../../server/vercel-auth';
+} from '../../server/vercel-auth.js';
 
 export default async function handler(
   req: IncomingMessage,

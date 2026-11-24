@@ -5,6 +5,7 @@
     }
   },
   "rewrites": [
-    { "source": "/guru", "destination": "/index.html" }
+    { "source": "/guru", "destination": "/index.html" },
+    { "source": "/guru/(.*)", "destination": "/index.html" }
   ]
 }

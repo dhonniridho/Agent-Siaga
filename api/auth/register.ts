@@ -2,7 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import {
   cleanText, getSql, hashPassword, initializeDatabase, readBody, sendJson,
   setCookie, signSession, teacherClasses,
-} from '../../server/vercel-auth';
+} from '../../server/vercel-auth.js';
 
 export default async function handler(
   req: IncomingMessage & { body?: unknown },

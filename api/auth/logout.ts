@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { clearCookie, sendJson } from '../../server/vercel-auth';
+import { clearCookie, sendJson } from '../../server/vercel-auth.js';
 
 export default async function handler(
   req: IncomingMessage,

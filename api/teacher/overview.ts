@@ -6,7 +6,7 @@ import {
   sendJson,
   teacherClasses,
   verifySession,
-} from '../../server/vercel-auth';
+} from '../../server/vercel-auth.js';
 
 export default async function handler(
   req: IncomingMessage,
