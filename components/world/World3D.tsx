@@ -1,18 +1,16 @@
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
 import { Sky } from '@react-three/drei';
-import { AnimatePresence } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   AlertTriangle,
   BookOpen,
-  CheckCircle2,
-  ChevronDown,
-  Gamepad2,
+  Home,
   LogOut,
   RefreshCw,
   Shield,
+  Target,
   Volume2,
-  VolumeX,
   X,
 } from 'lucide-react';
 import type { Avatar, DisasterType } from '../../types';
@@ -27,17 +25,18 @@ import {
   type MoveVector,
   type PlayerPose,
 } from './worldConfig';
-import { DirectionArrow } from './DirectionArrow';
 import { InfoBoard as InfoBoardMesh } from './InfoBoard';
 import { KaptenBillboard } from './KaptenBillboard';
 import { Player } from './Player';
 import { NatureEnvironment } from './NatureEnvironment';
 import { ZoneMarker } from './ZoneMarker';
 import { ZoneInfoCard } from './ZoneInfoCard';
+import { GuideBoardCard } from './GuideBoardCard';
 import { ZoneProgressCard } from './ZoneProgressCard';
 import { ZONE_INFO } from './zoneInfo';
 import { WorldLoadingScreen } from './WorldLoadingScreen';
 import { ExitConfirmDialog } from '../ExitConfirmDialog';
+import { LearningObjectivesModal } from '../LearningObjectivesModal';
 
 interface World3DProps {
   teamName: string;
@@ -48,7 +47,6 @@ interface World3DProps {
   readZones: DisasterType[];
   soundEnabled: boolean;
   onToggleSound: () => void;
-  onClassicMode: () => void;
   onStartMission: (zoneId: DisasterType) => void;
   onMarkZoneRead: (zoneId: DisasterType) => void;
   onExit?: () => void;
@@ -61,11 +59,10 @@ interface WorldSceneProps {
   avatar: Avatar | null;
   teamName: string;
   completedZones: DisasterType[];
-  nextZone?: MissionZone;
-  kaptenMessage: string;
   paused: boolean;
   onNearZone: (zone: MissionZone | null) => void;
   onNearBoard: (board: InfoBoard | null) => void;
+  playSound?: (type: string) => void;
 }
 
 const WorldScene: React.FC<WorldSceneProps> = ({
@@ -74,11 +71,10 @@ const WorldScene: React.FC<WorldSceneProps> = ({
   avatar,
   teamName,
   completedZones,
-  nextZone,
-  kaptenMessage,
   paused,
   onNearZone,
   onNearBoard,
+  playSound,
 }) => (
   <>
     <Sky distance={180} sunPosition={[60, 32, 45]} turbidity={6} rayleigh={0.55} mieCoefficient={0.005} mieDirectionalG={0.8} />
@@ -101,8 +97,6 @@ const WorldScene: React.FC<WorldSceneProps> = ({
 
     <KaptenBillboard />
 
-    <DirectionArrow poseRef={poseRef} target={nextZone} />
-
     <Player
       joystickRef={joystickRef}
       poseRef={poseRef}
@@ -111,6 +105,7 @@ const WorldScene: React.FC<WorldSceneProps> = ({
       paused={paused}
       onNearZone={onNearZone}
       onNearBoard={onNearBoard}
+      playSound={playSound}
     />
   </>
 );
@@ -124,22 +119,12 @@ const mapX = (x: number) =>
 const mapZ = (z: number) =>
   ((z - WORLD_BOUNDS.minZ) / (WORLD_BOUNDS.maxZ - WORLD_BOUNDS.minZ)) * 100;
 
-/** Nama pendek untuk legenda minimap. */
-const SHORT_ZONE_NAMES: Record<DisasterType, string> = {
-  EARTHQUAKE: 'Gempa',
-  FLOOD: 'Banjir',
-  LANDSLIDE: 'Longsor',
-  VOLCANO: 'Erupsi',
-};
-
 const Minimap: React.FC<{
   poseRef: { current: PlayerPose };
   completedZones: DisasterType[];
-  nextZone?: MissionZone;
-}> = ({ poseRef, completedZones, nextZone }) => {
+}> = ({ poseRef, completedZones }) => {
   const dotRef = useRef<HTMLDivElement>(null);
   const arrowRef = useRef<HTMLDivElement>(null);
-  const [legendOpen, setLegendOpen] = useState(false);
 
   useEffect(() => {
     let raf = 0;
@@ -159,9 +144,9 @@ const Minimap: React.FC<{
   }, [poseRef]);
 
   return (
-    <div className="pointer-events-none relative z-30 flex flex-col items-end gap-2">
+    <div className="pointer-events-none relative z-30 flex w-full flex-col items-start gap-2">
       <div
-        className="relative h-20 w-20 overflow-hidden rounded-full border-[3px] border-white/85 bg-emerald-200/90 shadow-xl ring-2 ring-slate-900/10 backdrop-blur-sm sm:h-32 sm:w-32"
+        className="relative h-24 w-24 overflow-hidden rounded-full border-[3px] border-white/85 bg-emerald-200/90 shadow-xl ring-2 ring-slate-900/10 backdrop-blur-sm sm:h-32 sm:w-32 lg:h-36 lg:w-36"
         title="Minimap alam"
       >
         {/* Perbukitan & danau */}
@@ -188,7 +173,6 @@ const Minimap: React.FC<{
         {/* Ikon zona misi (selesai = centang) */}
         {MISSION_ZONES.map((zone) => {
           const done = completedZones.includes(zone.id);
-          const isNext = nextZone?.id === zone.id;
           return (
             <div
               key={zone.id}
@@ -196,9 +180,6 @@ const Minimap: React.FC<{
               style={{ left: `${mapX(zone.position[0])}%`, top: `${mapZ(zone.position[2])}%` }}
               title={`${zone.name}${done ? ' (selesai)' : ''}`}
             >
-              {isNext && (
-                <span className="absolute -inset-1.5 animate-ping rounded-full bg-yellow-300/90" />
-              )}
               <div
                 className={`relative flex h-[18px] w-[18px] items-center justify-center rounded-full border-2 shadow sm:h-6 sm:w-6 ${
                   done
@@ -230,67 +211,7 @@ const Minimap: React.FC<{
         </div>
       </div>
 
-      {/* Label tujuan + tombol legenda */}
-      <div className="flex max-w-[172px] items-center gap-1.5 rounded-2xl border border-white/70 bg-white/95 px-2.5 py-1.5 shadow-md backdrop-blur-sm sm:max-w-[230px]">
-        {nextZone ? (
-          <>
-            <span className="text-sm leading-none" aria-hidden="true">
-              🎯
-            </span>
-            <span className="min-w-0 text-xs font-black leading-tight text-slate-800 sm:text-sm">
-              Tujuan:{' '}
-              <span style={{ color: nextZone.color }}>{nextZone.name}</span>
-            </span>
-          </>
-        ) : (
-          <span className="flex items-center gap-1 text-xs font-black leading-tight text-emerald-600 sm:text-sm">
-            <CheckCircle2 size={14} /> Semua selesai
-          </span>
-        )}
-        <button
-          type="button"
-          onClick={() => setLegendOpen((open) => !open)}
-          className="pointer-events-auto ml-0.5 flex h-6 flex-shrink-0 items-center gap-0.5 rounded-full bg-slate-100 px-1.5 text-slate-500 transition-colors hover:bg-slate-200 hover:text-slate-700"
-          aria-expanded={legendOpen}
-          aria-label={legendOpen ? 'Tutup legenda zona' : 'Buka legenda zona'}
-          title="Legenda zona"
-        >
-          <span className="hidden text-[10px] font-bold sm:inline">Legenda</span>
-          <ChevronDown size={14} className={`transition-transform ${legendOpen ? 'rotate-180' : ''}`} />
-        </button>
-      </div>
-
-      {/* Legenda mini: ikon + nama pendek */}
-      {legendOpen && (
-        <div className="pointer-events-auto w-[178px] rounded-2xl border border-white/70 bg-white/95 p-2 shadow-lg backdrop-blur-sm">
-          <p className="mb-1 text-[9px] font-black uppercase tracking-widest text-slate-400">
-            Legenda zona
-          </p>
-          <ul className="grid grid-cols-2 gap-1">
-            {MISSION_ZONES.map((zone) => {
-              const done = completedZones.includes(zone.id);
-              return (
-                <li
-                  key={zone.id}
-                  className="flex items-center gap-1 rounded-lg bg-slate-50 px-1.5 py-1"
-                >
-                  <span className="text-xs leading-none">{zone.icon}</span>
-                  <span
-                    className={`min-w-0 flex-1 truncate text-[10px] font-bold ${
-                      done ? 'text-emerald-600' : 'text-slate-600'
-                    }`}
-                  >
-                    {SHORT_ZONE_NAMES[zone.id]}
-                  </span>
-                  {done && (
-                    <CheckCircle2 size={11} className="flex-shrink-0 text-emerald-500" />
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-        </div>
-      )}
+      {/* Minimap tetap menampilkan posisi pemain dan empat zona. */}
     </div>
   );
 };
@@ -299,7 +220,7 @@ const Minimap: React.FC<{
 /* Fallback & error boundary                                           */
 /* ------------------------------------------------------------------ */
 
-const WorldFallback: React.FC<{ onClassicMode: () => void }> = ({ onClassicMode }) => (
+const WorldFallback: React.FC = () => (
   <div className="absolute inset-0 z-50 flex items-center justify-center bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-700 p-5">
     <div className="w-full max-w-md rounded-[2rem] bg-white p-6 text-center shadow-2xl sm:p-8">
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
@@ -307,8 +228,8 @@ const WorldFallback: React.FC<{ onClassicMode: () => void }> = ({ onClassicMode 
       </div>
       <h2 className="text-2xl font-black text-slate-800">Dunia 3D belum bisa dimuat</h2>
       <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">
-        Perangkat ini mungkin belum mendukung WebGL. Tenang, petualangan kalian tetap bisa
-        dilanjutkan lewat <b>Mode Klasik</b>.
+        Perangkat ini mungkin belum mendukung WebGL. Coba muat ulang halaman dengan
+        browser terbaru seperti Chrome atau Firefox.
       </p>
       <div className="mt-6 space-y-3">
         <button
@@ -317,22 +238,22 @@ const WorldFallback: React.FC<{ onClassicMode: () => void }> = ({ onClassicMode 
         >
           <RefreshCw size={20} /> Coba Lagi
         </button>
-        <button
-          onClick={onClassicMode}
+        <a
+          href="/"
           className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-base font-black text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
         >
-          <Gamepad2 size={20} /> Mode Klasik (2D)
-        </button>
+          <LogOut size={20} /> Kembali ke Menu
+        </a>
       </div>
     </div>
   </div>
 );
 
 class WorldErrorBoundary extends React.Component<
-  { children: React.ReactNode; onClassicMode: () => void },
+  { children: React.ReactNode },
   { failed: boolean }
 > {
-  constructor(props: { children: React.ReactNode; onClassicMode: () => void }) {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { failed: false };
   }
@@ -343,7 +264,7 @@ class WorldErrorBoundary extends React.Component<
 
   render() {
     if (this.state.failed) {
-      return <WorldFallback onClassicMode={this.props.onClassicMode} />;
+      return <WorldFallback />;
     }
     return this.props.children;
   }
@@ -373,7 +294,6 @@ export const World3D: React.FC<World3DProps> = ({
   readZones,
   soundEnabled,
   onToggleSound,
-  onClassicMode,
   onStartMission,
   onMarkZoneRead,
   onExit,
@@ -387,8 +307,11 @@ export const World3D: React.FC<World3DProps> = ({
   });
   const [nearZone, setNearZone] = useState<MissionZone | null>(null);
   const [activeZone, setActiveZone] = useState<MissionZone | null>(null);
+  const [guideBoardOpen, setGuideBoardOpen] = useState(false);
   const [nearBoard, setNearBoard] = useState<InfoBoard | null>(null);
   const [tip, setTip] = useState<{ text: string; key: number } | null>(null);
+  const [learningObjectivesOpen, setLearningObjectivesOpen] = useState(false);
+  const lastNearZoneIdRef = useRef<DisasterType | null>(null);
   const [ready, setReady] = useState(false);
   const [webglOk] = useState(webglSupported);
   const [compact, setCompact] = useState(false);
@@ -457,6 +380,7 @@ export const World3D: React.FC<World3DProps> = ({
 
   const nearZoneDone = nearZone ? completedZones.includes(nearZone.id) : false;
   const zoneCardOpen = activeZone !== null;
+  const gameplayPaused = zoneCardOpen || guideBoardOpen || learningObjectivesOpen || exitDialogOpen;
 
   const openZoneCard = useCallback(
     (zone: MissionZone) => {
@@ -474,43 +398,56 @@ export const World3D: React.FC<World3DProps> = ({
 
   const startMissionFromCard = useCallback(
     (zoneId: DisasterType) => {
-      if (completedZones.includes(zoneId)) return;
+      // Semua zona selalu bisa dimainkan ulang. Skor terbaik tetap tersimpan
+      // di server lokal dan Dashboard Guru.
       setActiveZone(null);
       onStartMission(zoneId);
     },
-    [completedZones, onStartMission]
+    [onStartMission]
   );
 
   const handleNearBoard = useCallback((board: InfoBoard | null) => {
     setNearBoard(board);
   }, []);
 
-  const kaptenMessage = useMemo(() => {
-    if (completedZones.length >= MISSION_ZONES.length) {
-      return 'Semua zona selesai! Kamu luar biasa!';
-    }
-    return `Halo ${teamName || 'Agen'}! Cari tiang bercahaya dan baca papan fakta ya!`;
-  }, [completedZones.length, teamName]);
-
   useEffect(() => {
+    // Papan sudah memiliki prompt baca di bagian bawah. Dialog Kapten hanya
+    // memberi konteks/semangat agar instruksi tidak tampil dua kali.
+    if (nearBoard) {
+      setTip(null);
+      return;
+    }
+
+    // Saat keluar dari radius zona, tutup pesan zona tanpa menggantinya
+    // dengan bubble baru yang bisa menumpuk dengan prompt lain.
+    if (!nearZone && lastNearZoneIdRef.current) {
+      lastNearZoneIdRef.current = null;
+      setTip(null);
+      return;
+    }
+    if (nearZone) lastNearZoneIdRef.current = nearZone.id;
+
     let message: string;
     if (completedZones.length >= MISSION_ZONES.length) {
       message = 'Semua zona selesai! Misi penyelamatan bumi berhasil!';
-    } else if (nearBoard) {
-      message = 'Papan fakta! Tekan E untuk membaca isinya.';
     } else if (nearZone) {
       message = nearZoneDone
-        ? `${nearZone.name} sudah selesai! Tekan E untuk melihat ringkasannya.`
-        : `Kamu di zona ${nearZone.name}. Tekan E untuk membaca kartunya!`;
+        ? `${nearZone.name} sudah selesai. Tekan E untuk main lagi kapan saja!`
+        : `Kamu berada di zona ${nearZone.name}. Tetap siaga, ya!`;
     } else {
       const next = MISSION_ZONES.find((zone) => !completedZones.includes(zone.id));
       message = next
         ? `Halo ${teamName || 'Agen'}! Cari tiang bercahaya. Berikutnya: ${next.name}.`
         : 'Semua zona selesai!';
     }
-    setTip({ text: message, key: Date.now() });
-    const timer = window.setTimeout(() => setTip(null), 9000);
-    return () => window.clearTimeout(timer);
+    const showTimer = window.setTimeout(() => {
+      setTip({ text: message, key: Date.now() });
+    }, nearZone ? 350 : 0);
+    const hideTimer = window.setTimeout(() => setTip(null), nearZone ? 5850 : 5500);
+    return () => {
+      window.clearTimeout(showTimer);
+      window.clearTimeout(hideTimer);
+    };
   }, [completedZones, nearBoard, nearZone, nearZoneDone, teamName]);
 
   const nearBoardZone = useMemo(
@@ -521,13 +458,15 @@ export const World3D: React.FC<World3DProps> = ({
     [nearBoard]
   );
 
+  // Papan panduan di area spawn memakai kartu khusus (bukan kartu zona).
+  const nearGuide = nearBoard?.kind === 'guide';
   // Target baca: papan informasi diutamakan, lalu tiang zona.
-  const readTargetZone = nearBoardZone || nearZone;
+  const readTargetZone = nearGuide ? null : nearBoardZone || nearZone;
 
   // Tekan E di dekat papan/tiang zona = buka kartu informasi, bukan langsung
   // memulai misi. Misi hanya dimulai dari tombol "Mulai Misi" di kartu.
   useEffect(() => {
-    if (!readTargetZone || zoneCardOpen || exitDialogOpen) return;
+    if (!readTargetZone || gameplayPaused) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.code !== 'KeyE' || event.repeat) return;
       event.preventDefault();
@@ -535,7 +474,18 @@ export const World3D: React.FC<World3DProps> = ({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [readTargetZone, zoneCardOpen, exitDialogOpen, openZoneCard]);
+  }, [readTargetZone, gameplayPaused, openZoneCard]);
+
+  useEffect(() => {
+    if (!nearGuide || gameplayPaused) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== 'KeyE' || event.repeat) return;
+      event.preventDefault();
+      setGuideBoardOpen(true);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [nearGuide, gameplayPaused]);
 
   // Kartu zona dan dialog Keluar tidak boleh tampil bersamaan.
   useEffect(() => {
@@ -544,13 +494,12 @@ export const World3D: React.FC<World3DProps> = ({
 
   // Lepaskan input joystick saat kartu terbuka supaya pemain tidak meluncur.
   useEffect(() => {
-    if (!zoneCardOpen) return;
+    if (!gameplayPaused) return;
     joystickRef.current = { x: 0, y: 0 };
-  }, [zoneCardOpen]);
+  }, [gameplayPaused]);
 
   const handleSound = () => {
     onToggleSound();
-    playSound?.('click');
   };
 
   return (
@@ -559,7 +508,7 @@ export const World3D: React.FC<World3DProps> = ({
       style={{ touchAction: 'none' }}
     >
       {webglOk ? (
-        <WorldErrorBoundary onClassicMode={onClassicMode}>
+        <WorldErrorBoundary>
           <Canvas
             className="absolute inset-0"
             dpr={[1, compact ? 1.25 : 1.5]}
@@ -576,9 +525,8 @@ export const World3D: React.FC<World3DProps> = ({
                 avatar={avatar}
                 teamName={teamName}
                 completedZones={completedZones}
-                nextZone={nextZone}
-                kaptenMessage={kaptenMessage}
-                paused={zoneCardOpen}
+                paused={gameplayPaused}
+                playSound={playSound}
                 onNearZone={handleNearZone}
                 onNearBoard={handleNearBoard}
               />
@@ -586,7 +534,7 @@ export const World3D: React.FC<World3DProps> = ({
           </Canvas>
         </WorldErrorBoundary>
       ) : (
-        <WorldFallback onClassicMode={onClassicMode} />
+        <WorldFallback />
       )}
 
       {/* Scrim atas & bawah supaya HUD mudah dibaca */}
@@ -594,74 +542,89 @@ export const World3D: React.FC<World3DProps> = ({
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-slate-900/35 to-transparent" />
 
       {/* ---------- HUD ATAS ---------- */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 p-3 sm:p-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex min-w-0 flex-col gap-2">
-            <div className="flex items-center gap-2 rounded-2xl border border-white/60 bg-white/90 px-2.5 py-2 shadow-lg backdrop-blur-sm sm:gap-3 sm:px-3">
-              <div
-                className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-gradient-to-br text-xl shadow-inner sm:h-12 sm:w-12 sm:text-2xl ${
-                  avatar?.bgGradient || 'from-indigo-400 to-purple-600'
-                }`}
-              >
-                {avatar?.icon || <Shield size={20} />}
+      {!zoneCardOpen && !exitDialogOpen && !learningObjectivesOpen && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 p-3 sm:p-4">
+          <div className="flex items-start justify-between gap-3">
+            <div className="pointer-events-auto flex w-24 min-w-0 flex-col items-start gap-2 sm:w-32 lg:w-36">
+              <Minimap poseRef={poseRef} completedZones={completedZones} />
+
+              <div className="flex w-full items-center gap-1.5 rounded-xl border border-white/60 bg-white/90 px-1.5 py-1.5 shadow-lg backdrop-blur-sm sm:gap-2 sm:rounded-2xl sm:px-2 sm:py-2">
+                <div
+                  className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-base shadow-inner sm:h-10 sm:w-10 sm:rounded-xl sm:text-xl ${
+                    avatar?.bgGradient || 'from-indigo-400 to-purple-600'
+                  }`}
+                >
+                  {avatar?.icon || <Shield size={18} />}
+                </div>
+                <div className="min-w-0 leading-tight">
+                  <p className="truncate text-[11px] font-black text-slate-800 sm:text-sm">
+                    {teamName || 'Tim Agent'}
+                  </p>
+                  <p className="truncate text-[8px] font-black uppercase tracking-wider text-indigo-500 sm:text-[10px]">
+                    Unit Penyelamat
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 leading-tight">
-                <p className="max-w-[30vw] truncate text-sm font-black text-slate-800 sm:max-w-[220px] sm:text-base">
-                  {teamName || 'Tim Agent'}
-                </p>
-                <p className="text-[10px] font-black uppercase tracking-widest text-indigo-500">
-                  Unit Penyelamat
-                </p>
+
+              <div className="flex w-full items-center justify-center gap-1 rounded-xl border border-white/40 bg-indigo-600/90 px-2 py-1.5 text-white shadow-md backdrop-blur-sm sm:gap-1.5 sm:px-3">
+                <Shield size={13} className="text-yellow-300" />
+                <span className="text-[9px] font-bold uppercase tracking-wider text-indigo-100 sm:text-[10px]">
+                  Skor
+                </span>
+                <span className="font-mono text-sm font-black">{score}</span>
               </div>
             </div>
 
-            <div className="flex w-max items-center gap-1.5 rounded-xl border border-white/40 bg-indigo-600/90 px-3 py-1.5 text-white shadow-md backdrop-blur-sm">
-              <Shield size={14} className="text-yellow-300" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-100">
-                Skor
-              </span>
-              <span className="font-mono text-sm font-black">{score}</span>
-            </div>
-
-          </div>
-
-          <div className="flex flex-col items-end gap-2">
             <div className="pointer-events-auto flex items-center gap-2">
               <button
-                onClick={handleSound}
-                className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/60 bg-white/90 text-slate-700 shadow-lg backdrop-blur-sm transition-colors hover:bg-white active:scale-95"
-                aria-label={soundEnabled ? 'Matikan suara' : 'Nyalakan suara'}
-                title={soundEnabled ? 'Matikan suara' : 'Nyalakan suara'}
+                type="button"
+                onClick={() => {
+                  playSound?.('click');
+                  setLearningObjectivesOpen(true);
+                }}
+                className="flex min-h-11 items-center gap-2 rounded-xl border border-white/70 bg-white/85 px-3 text-sm font-black text-slate-700 shadow-lg backdrop-blur-sm transition-colors hover:bg-white active:scale-95 sm:text-base"
               >
-                {soundEnabled ? <Volume2 size={21} /> : <VolumeX size={21} className="text-slate-400" />}
+                <Target size={19} className="text-indigo-600" />
+                Tujuan Pembelajaran
+              </button>
+              <button
+                type="button"
+                onClick={handleSound}
+                className="relative flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-white/85 text-slate-700 shadow-lg backdrop-blur-sm transition-colors hover:bg-white active:scale-95"
+                aria-label={soundEnabled ? 'Suara: aktif' : 'Suara: nonaktif'}
+                title={soundEnabled ? 'Suara aktif' : 'Suara nonaktif'}
+              >
+                <Volume2 size={21} />
+                {!soundEnabled && <span className="absolute h-[2px] w-7 rotate-[-45deg] rounded-full bg-rose-600 shadow-sm" />}
               </button>
               {onExit && (
                 <button
+                  type="button"
                   onClick={() => {
                     playSound?.('click');
                     setExitDialogOpen(true);
                   }}
-                  className="flex h-11 min-h-[44px] items-center justify-center gap-1 rounded-2xl border border-white/60 bg-white/90 px-2.5 text-xs font-black text-slate-700 shadow-lg backdrop-blur-sm transition-colors hover:bg-white active:scale-95 sm:gap-1.5 sm:px-3 sm:text-sm"
-                  aria-label="Keluar dari dunia 3D"
-                  title="Keluar"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/70 bg-white/85 text-slate-700 shadow-lg backdrop-blur-sm transition-colors hover:bg-white active:scale-95"
+                  aria-label="Beranda"
+                  title="Beranda"
                 >
-                  <LogOut size={19} />
-                  <span>Keluar</span>
+                  <Home size={21} />
                 </button>
               )}
             </div>
-
-            <Minimap poseRef={poseRef} completedZones={completedZones} nextZone={nextZone} />
           </div>
         </div>
-      </div>
+      )}
 
       {/* ---------- PESAN KAPTEN SIAGA ---------- */}
-      {tip && ready && (
-        <div className="pointer-events-none absolute inset-x-0 top-[192px] z-20 flex justify-center pl-3 pr-[104px] sm:top-[178px] sm:pr-40 lg:pr-3">
+      {tip && ready && !nearBoard && !zoneCardOpen && !exitDialogOpen && !learningObjectivesOpen && (
+        <div
+          className="pointer-events-none absolute bottom-[7.25rem] left-3 z-20 flex max-w-[min(380px,calc(100vw-1.5rem))] sm:bottom-24 sm:left-4 lg:left-6"
+          style={{ left: 'max(0.75rem, env(safe-area-inset-left, 0.75rem))' }}
+        >
           <div
             key={tip.key}
-            className="pointer-events-auto flex max-w-md items-start gap-2 rounded-2xl border-2 border-amber-300 bg-white/95 px-2.5 py-2 shadow-xl backdrop-blur-sm"
+            className="pointer-events-auto flex w-full items-start gap-2 rounded-2xl border border-white/70 bg-white/92 px-2.5 py-2 shadow-xl backdrop-blur-md"
           >
             <img
               src="/assets/kapten-idle.png"
@@ -670,10 +633,10 @@ export const World3D: React.FC<World3DProps> = ({
               style={{ imageRendering: 'pixelated' }}
             />
             <div className="min-w-0">
-              <p className="text-[9px] font-black uppercase tracking-widest text-amber-600">
+              <p className="text-[9px] font-black uppercase tracking-widest text-indigo-500">
                 Kapten Siaga
               </p>
-              <p className="text-[11px] font-bold leading-snug text-slate-700 sm:text-xs">
+              <p className="text-xs font-bold leading-snug text-slate-700 sm:text-sm">
                 {tip.text}
               </p>
             </div>
@@ -689,11 +652,19 @@ export const World3D: React.FC<World3DProps> = ({
       )}
 
       {/* ---------- PETUNJUK BACA (papan informasi / tiang zona) ---------- */}
-      {readTargetZone && !zoneCardOpen && !exitDialogOpen && (
-        <div className="pointer-events-none absolute inset-x-0 bottom-32 z-20 flex justify-center px-3 sm:bottom-24">
+      <AnimatePresence mode="wait">
+      {readTargetZone && !zoneCardOpen && !exitDialogOpen && !learningObjectivesOpen && (
+        <motion.div
+          key={`${readTargetZone.id}-${nearBoard ? 'board' : 'zone'}`}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 6 }}
+          transition={{ duration: 0.2 }}
+          className="pointer-events-none absolute inset-x-0 bottom-32 z-20 flex justify-center px-3 sm:bottom-24"
+        >
           <div
-            className="pointer-events-auto flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border-2 bg-white/95 py-1.5 pl-2 pr-2.5 shadow-xl backdrop-blur-md"
-            style={{ borderColor: readTargetZone.color }}
+            className="pointer-events-auto flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border bg-white/95 py-1.5 pl-2 pr-2.5 shadow-xl backdrop-blur-md"
+            style={{ borderColor: `${readTargetZone.color}99`, borderWidth: '1px', borderLeftWidth: '3px' }}
           >
             <span
               className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-lg"
@@ -732,20 +703,58 @@ export const World3D: React.FC<World3DProps> = ({
               </p>
             )}
           </div>
-        </div>
+        </motion.div>
       )}
+      </AnimatePresence>
+
+      {/* ---------- PETUNJUK PAPAN PANDUAN (SPAWN) ---------- */}
+      <AnimatePresence mode="wait">
+        {nearGuide && !guideBoardOpen && !zoneCardOpen && !exitDialogOpen && !learningObjectivesOpen && (
+          <motion.div
+            key="guide-board"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 6 }}
+            transition={{ duration: 0.2 }}
+            className="pointer-events-none absolute inset-x-0 bottom-32 z-20 flex justify-center px-3 sm:bottom-24"
+          >
+            <div className="pointer-events-auto flex max-w-[calc(100vw-1.5rem)] items-center gap-2 rounded-full border-2 border-indigo-300 bg-white/95 py-1.5 pl-2 pr-2.5 shadow-xl backdrop-blur-md">
+              <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-indigo-100 text-lg">🧭</span>
+              <div className="min-w-0 leading-tight">
+                <p className="text-[9px] font-black uppercase tracking-widest text-indigo-500">Papan Panduan</p>
+                <p className="max-w-[42vw] truncate text-xs font-black text-slate-800 sm:max-w-none">
+                  Ringkasan 4 Zona Bencana
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  playSound?.('click');
+                  setGuideBoardOpen(true);
+                }}
+                className="ml-1 flex min-h-[40px] flex-shrink-0 items-center justify-center gap-1 rounded-full bg-indigo-600 px-3 text-sm font-black text-white shadow-md active:scale-95"
+              >
+                <BookOpen size={16} /> Baca
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ---------- PROGRES & KONTROL BAWAH ---------- */}
+      {!zoneCardOpen && !exitDialogOpen && !learningObjectivesOpen && (
       <div
         className="pointer-events-none absolute inset-x-0 bottom-0 p-2 sm:p-4"
         style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
       >
         <div className="relative flex items-end justify-between gap-2">
-          <ZoneProgressCard
-            completedZones={completedZones}
-            readZones={readZones}
-            nextZone={nextZone}
-          />
+          {!nearZone && !nearBoard && !tip && (
+            <ZoneProgressCard
+              completedZones={completedZones}
+              readZones={readZones}
+              nextZone={nextZone}
+            />
+          )}
 
           {/* HP: joystick pindah ke kanan supaya tidak menutupi kartu progres. */}
           {compact && <Joystick valueRef={joystickRef} />}
@@ -787,6 +796,13 @@ export const World3D: React.FC<World3DProps> = ({
           )}
         </div>
       </div>
+      )}
+
+      {/* ---------- TUJUAN PEMBELAJARAN ---------- */}
+      <LearningObjectivesModal
+        open={learningObjectivesOpen}
+        onClose={() => setLearningObjectivesOpen(false)}
+      />
 
       {/* ---------- KARTU INFORMASI ZONA ---------- */}
       <AnimatePresence>
@@ -803,6 +819,16 @@ export const World3D: React.FC<World3DProps> = ({
         )}
       </AnimatePresence>
 
+      {/* ---------- KARTU PANDUAN DI AREA SPAWN ---------- */}
+      <AnimatePresence>
+        {guideBoardOpen && (
+          <GuideBoardCard
+            onClose={() => setGuideBoardOpen(false)}
+            playSound={playSound}
+          />
+        )}
+      </AnimatePresence>
+
       {/* ---------- KONFIRMASI KELUAR ---------- */}
       <ExitConfirmDialog
         open={exitDialogOpen}
@@ -811,12 +837,12 @@ export const World3D: React.FC<World3DProps> = ({
           setExitDialogOpen(false);
           onExit?.();
         }}
-        onClassicMode={() => {
-          setExitDialogOpen(false);
-          onClassicMode();
-        }}
         onRequestOpen={zoneCardOpen ? undefined : () => setExitDialogOpen(true)}
         playSound={playSound}
+        title="Yakin ingin kembali ke beranda?"
+        description="Progres sesi ini akan dihapus jika kembali ke beranda."
+        cancelLabel="Batal"
+        confirmLabel="Ya"
       />
 
       {/* ---------- LOADING ---------- */}

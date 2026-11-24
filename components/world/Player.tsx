@@ -1,22 +1,20 @@
-import React, { useEffect, useMemo, useRef } from 'react';
-import { Billboard, Float } from '@react-three/drei';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
 import type { Avatar } from '../../types';
+import { Agent3D } from '../../components3d/Agent3D';
 import {
   INFO_BOARDS,
   INFO_BOARD_READ_RADIUS,
   MISSION_ZONES,
   PLAYER_SPAWN,
   PLAYER_SPEED,
-  avatarPalette,
   isBlocked,
   type InfoBoard,
   type MissionZone,
   type MoveVector,
   type PlayerPose,
 } from './worldConfig';
-import { useNameTagTexture } from './worldTextures';
 
 interface PlayerProps {
   joystickRef: { current: MoveVector };
@@ -27,6 +25,7 @@ interface PlayerProps {
   paused?: boolean;
   onNearZone?: (zone: MissionZone | null) => void;
   onNearBoard?: (board: InfoBoard | null) => void;
+  playSound?: (type: string) => void;
 }
 
 const MOVEMENT_KEYS = new Set([
@@ -38,6 +37,7 @@ const MOVEMENT_KEYS = new Set([
   'ArrowDown',
   'ArrowLeft',
   'ArrowRight',
+  'Space',
 ]);
 
 /**
@@ -53,25 +53,26 @@ export const Player: React.FC<PlayerProps> = ({
   paused = false,
   onNearZone,
   onNearBoard,
+  playSound,
 }) => {
   const { camera, gl } = useThree();
   const group = useRef<THREE.Group>(null);
-  const leftLeg = useRef<THREE.Group>(null);
-  const rightLeg = useRef<THREE.Group>(null);
-  const leftArm = useRef<THREE.Group>(null);
-  const rightArm = useRef<THREE.Group>(null);
+  const [moving, setMoving] = useState(false);
+  const movingRef = useRef(false);
+  const [jumping, setJumping] = useState(false);
+  const jumpHeight = useRef(0);
+  const jumpVelocity = useRef(0);
+  const jumpCooldown = useRef(0);
+  const jumpActive = useRef(false);
+  const jumpWasDown = useRef(false);
 
   const keys = useRef<Set<string>>(new Set());
   const position = useRef(new THREE.Vector3(...PLAYER_SPAWN));
   const angle = useRef(0);
-  const walkPhase = useRef(0);
   const yaw = useRef(0);
   const pitch = useRef(0.27);
   const lastZoneRef = useRef<string | null>(null);
   const lastBoardRef = useRef<string | null>(null);
-
-  const palette = useMemo(() => avatarPalette(avatar?.color), [avatar?.color]);
-  const nameTexture = useNameTagTexture(avatar?.icon || '🕵️', teamName || 'Tim Agent', palette.main);
 
   const cameraTarget = useMemo(() => new THREE.Vector3(), []);
   const lookTarget = useMemo(() => new THREE.Vector3(), []);
@@ -81,6 +82,11 @@ export const Player: React.FC<PlayerProps> = ({
     if (!paused) return;
     keys.current.clear();
     joystickRef.current = { x: 0, y: 0 };
+    jumpHeight.current = 0;
+    jumpVelocity.current = 0;
+    jumpActive.current = false;
+    jumpWasDown.current = false;
+    setJumping(false);
   }, [paused, joystickRef]);
 
   // Keyboard (desktop)
@@ -163,6 +169,25 @@ export const Player: React.FC<PlayerProps> = ({
     if (paused) return;
 
     const delta = Math.min(rawDelta, 0.05);
+    jumpCooldown.current = Math.max(0, jumpCooldown.current - delta);
+    const jumpPressed = keys.current.has('Space');
+    if (jumpPressed && !jumpWasDown.current && !jumpActive.current && jumpCooldown.current <= 0) {
+      jumpVelocity.current = 5.2;
+      jumpActive.current = true;
+      setJumping(true);
+      playSound?.('whoosh');
+    }
+    jumpWasDown.current = jumpPressed;
+    if (jumpActive.current) {
+      jumpVelocity.current -= 12.5 * delta;
+      jumpHeight.current = Math.max(0, jumpHeight.current + jumpVelocity.current * delta);
+      if (jumpHeight.current === 0 && jumpVelocity.current < 0) {
+        jumpVelocity.current = 0;
+        jumpActive.current = false;
+        jumpCooldown.current = 0.28;
+        setJumping(false);
+      }
+    }
 
     // --- Input ---
     const pressed = keys.current;
@@ -200,13 +225,10 @@ export const Player: React.FC<PlayerProps> = ({
       let diff = targetAngle - angle.current;
       diff = Math.atan2(Math.sin(diff), Math.cos(diff));
       angle.current += diff * Math.min(1, 14 * delta);
-      walkPhase.current += delta * 11;
-    } else {
-      walkPhase.current += delta * 2;
     }
 
     if (group.current) {
-      group.current.position.set(position.current.x, 0, position.current.z);
+      group.current.position.set(position.current.x, jumpHeight.current, position.current.z);
       group.current.rotation.y = angle.current;
     }
 
@@ -251,14 +273,12 @@ export const Player: React.FC<PlayerProps> = ({
       lastBoardRef.current = nearestBoardId;
       onNearBoard?.(nearestBoard);
     }
-
-    // --- Animasi langkah ---
-    const moving = Math.abs(dx) + Math.abs(dz) > 0.0005;
-    const swing = Math.sin(walkPhase.current) * (moving ? 0.7 : 0.035);
-    if (leftLeg.current) leftLeg.current.rotation.x = swing;
-    if (rightLeg.current) rightLeg.current.rotation.x = -swing;
-    if (leftArm.current) leftArm.current.rotation.x = -swing * 0.8;
-    if (rightArm.current) rightArm.current.rotation.x = swing * 0.8;
+    // Agent3D kini menangani animasi langkahnya sendiri (mode run/idle).
+    const isMoving = Math.abs(dx) + Math.abs(dz) > 0.0005;
+    if (isMoving !== movingRef.current) {
+      movingRef.current = isMoving;
+      setMoving(isMoving);
+    }
 
     // --- Kamera orang ketiga ---
     const distance = Math.cos(pitch.current) * 8.6;
@@ -269,7 +289,7 @@ export const Player: React.FC<PlayerProps> = ({
       position.current.z + Math.cos(yaw.current) * distance
     );
     camera.position.lerp(cameraTarget, 1 - Math.exp(-10 * delta));
-    lookTarget.set(position.current.x, 1.7, position.current.z);
+        lookTarget.set(position.current.x, 1.7 + jumpHeight.current, position.current.z);
     camera.lookAt(lookTarget);
   });
 
@@ -281,129 +301,14 @@ export const Player: React.FC<PlayerProps> = ({
         <meshBasicMaterial color="#0f172a" transparent opacity={0.22} depthWrite={false} />
       </mesh>
 
-      {/* Kaki */}
-      <group ref={leftLeg} position={[-0.17, 0.7, 0]}>
-        <mesh position={[0, -0.35, 0]}>
-          <boxGeometry args={[0.26, 0.7, 0.28]} />
-          <meshStandardMaterial color={palette.dark} roughness={0.8} />
-        </mesh>
-      </group>
-      <group ref={rightLeg} position={[0.17, 0.7, 0]}>
-        <mesh position={[0, -0.35, 0]}>
-          <boxGeometry args={[0.26, 0.7, 0.28]} />
-          <meshStandardMaterial color={palette.dark} roughness={0.8} />
-        </mesh>
-      </group>
-
-      {/* Sepatu */}
-      <mesh position={[-0.17, 0.08, 0.07]}>
-        <boxGeometry args={[0.3, 0.16, 0.42]} />
-        <meshStandardMaterial color="#1e293b" />
-      </mesh>
-      <mesh position={[0.17, 0.08, 0.07]}>
-        <boxGeometry args={[0.3, 0.16, 0.42]} />
-        <meshStandardMaterial color="#1e293b" />
-      </mesh>
-
-      {/* Badan */}
-      <mesh position={[0, 1.13, 0]}>
-        <capsuleGeometry args={[0.36, 0.52, 6, 14]} />
-        <meshStandardMaterial color={palette.main} roughness={0.65} />
-      </mesh>
-
-      {/* Rompi / garis tim */}
-      <mesh position={[0, 1.16, 0]}>
-        <cylinderGeometry args={[0.372, 0.372, 0.2, 16, 1, true]} />
-        <meshStandardMaterial color={palette.light} roughness={0.7} />
-      </mesh>
-
-      {/* Ikat pinggang */}
-      <mesh position={[0, 0.97, 0]}>
-        <cylinderGeometry args={[0.365, 0.365, 0.1, 16, 1, true]} />
-        <meshStandardMaterial color="#3f2a12" roughness={0.85} />
-      </mesh>
-      <mesh position={[0.16, 1.27, 0.33]}>
-        <sphereGeometry args={[0.055, 8, 8]} />
-        <meshStandardMaterial color="#fbbf24" metalness={0.5} roughness={0.35} emissive="#f59e0b" emissiveIntensity={0.25} />
-      </mesh>
-
-      {/* Tali tas punggung */}
-      {[-0.26, 0.26].map((x) => (
-        <mesh key={x} position={[x, 1.22, 0.31]} rotation-x={-0.08}>
-          <boxGeometry args={[0.09, 0.62, 0.06]} />
-          <meshStandardMaterial color={palette.dark} roughness={0.8} />
-        </mesh>
-      ))}
-
-      {/* Kantong air di pinggang */}
-      <mesh position={[-0.34, 0.92, -0.14]} rotation-z={0.15}>
-        <cylinderGeometry args={[0.09, 0.1, 0.24, 8]} />
-        <meshStandardMaterial color="#0ea5e9" roughness={0.5} metalness={0.15} />
-      </mesh>
-
-      {/* Tas punggung */}
-      <mesh position={[0, 1.12, -0.36]}>
-        <boxGeometry args={[0.48, 0.58, 0.24]} />
-        <meshStandardMaterial color={palette.dark} roughness={0.8} />
-      </mesh>
-
-      {/* Lengan */}
-      <group ref={leftArm} position={[-0.45, 1.45, 0]}>
-        <mesh position={[0, -0.28, 0]}>
-          <boxGeometry args={[0.19, 0.56, 0.22]} />
-          <meshStandardMaterial color={palette.main} roughness={0.7} />
-        </mesh>
-        <mesh position={[0, -0.58, 0]}>
-          <sphereGeometry args={[0.105, 10, 10]} />
-          <meshStandardMaterial color="#f2c49b" roughness={0.7} />
-        </mesh>
-      </group>
-      <group ref={rightArm} position={[0.45, 1.45, 0]}>
-        <mesh position={[0, -0.28, 0]}>
-          <boxGeometry args={[0.19, 0.56, 0.22]} />
-          <meshStandardMaterial color={palette.main} roughness={0.7} />
-        </mesh>
-        <mesh position={[0, -0.58, 0]}>
-          <sphereGeometry args={[0.105, 10, 10]} />
-          <meshStandardMaterial color="#f2c49b" roughness={0.7} />
-        </mesh>
-      </group>
-
-      {/* Kepala */}
-      <mesh position={[0, 1.86, 0]}>
-        <sphereGeometry args={[0.3, 16, 16]} />
-        <meshStandardMaterial color="#f2c49b" roughness={0.75} />
-      </mesh>
-
-      {/* Mata */}
-      <mesh position={[-0.11, 1.9, 0.27]}>
-        <sphereGeometry args={[0.045, 8, 8]} />
-        <meshStandardMaterial color="#0f172a" />
-      </mesh>
-      <mesh position={[0.11, 1.9, 0.27]}>
-        <sphereGeometry args={[0.045, 8, 8]} />
-        <meshStandardMaterial color="#0f172a" />
-      </mesh>
-
-      {/* Topi tim */}
-      <mesh position={[0, 2.11, 0]}>
-        <cylinderGeometry args={[0.3, 0.32, 0.16, 16]} />
-        <meshStandardMaterial color={palette.main} roughness={0.6} />
-      </mesh>
-      <mesh position={[0, 2.04, 0.2]}>
-        <boxGeometry args={[0.48, 0.05, 0.32]} />
-        <meshStandardMaterial color={palette.main} roughness={0.6} />
-      </mesh>
-
-      {/* Papan nama tim */}
-      <Float speed={1.6} rotationIntensity={0} floatIntensity={0.18}>
-        <Billboard position={[0, 2.62, 0]}>
-          <mesh>
-            <planeGeometry args={[1.95, 0.4875]} />
-            <meshBasicMaterial map={nameTexture} transparent depthWrite={false} toneMapped={false} />
-          </mesh>
-        </Billboard>
-      </Float>
+      {/* Model karakter 3D yang sama dengan mode misi — kini benar-benar 3D,
+          bukan sprite datar. Agent3D mengurus animasi tubuh & papan nama. */}
+      <Agent3D
+        avatar={avatar}
+        mode={jumping ? 'jump' : moving ? 'run' : 'idle'}
+        scale={1}
+        label={teamName}
+      />
     </group>
   );
 };

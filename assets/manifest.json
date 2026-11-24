@@ -1,0 +1,1981 @@
+{
+  "version": "2d-stage-1",
+  "style": "flat-cartoon-2d",
+  "orientation": "side-view",
+  "format": "svg",
+  "notes": [
+    "Aset edukasi dan materi lama tidak diubah.",
+    "Semua teks materi tetap dirender oleh aplikasi agar mudah dibaca dan tidak mengubah isi edukasi.",
+    "Pivot dan hitbox dinyatakan relatif terhadap viewBox, dengan titik 0,0 di kiri atas."
+  ],
+  "assets": [
+    {
+      "file": "characters/player_idle_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: pose diam",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 1",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_02.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 2",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_03.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 3",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_04.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 4",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_05.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 5",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_walk_06.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jalan frame 6",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_jump_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: melompat",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_crouch_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: jongkok dan berlindung",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_hit_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: terkena benda dan pusing",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/player_win_01.svg",
+      "category": "characters",
+      "width": 256,
+      "height": 320,
+      "use": "Pemain: senang dan menang",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/kapten_idle_01.svg",
+      "category": "characters",
+      "width": 320,
+      "height": 400,
+      "use": "Kapten Siaga: netral",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/kapten_happy_01.svg",
+      "category": "characters",
+      "width": 320,
+      "height": 400,
+      "use": "Kapten Siaga: senang",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/kapten_warn_01.svg",
+      "category": "characters",
+      "width": 320,
+      "height": 400,
+      "use": "Kapten Siaga: peringatan",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/kapten_error_01.svg",
+      "category": "characters",
+      "width": 320,
+      "height": 400,
+      "use": "Kapten Siaga: koreksi",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/kapten_point_01.svg",
+      "category": "characters",
+      "width": 320,
+      "height": 400,
+      "use": "Kapten Siaga: menunjuk dan menjelaskan",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_blaze.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent blaze",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_aqua.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent aqua",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_terra.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent terra",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_tech.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent tech",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_doc.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent doc",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "characters/avatar_scout.svg",
+      "category": "characters",
+      "width": 128,
+      "height": 128,
+      "use": "Avatar Agent scout",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.28,
+        "y": 0.18,
+        "width": 0.44,
+        "height": 0.74
+      }
+    },
+    {
+      "file": "backgrounds/menu_bg.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Latar layar awal",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/guide_bg.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Latar panduan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/victory_bg.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Latar kemenangan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/quiz_arena.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Latar arena kuis",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z01_classroom_far.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z01: lapisan jauh kelas",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z01_classroom_mid.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z01: lapisan tengah kelas",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z01_classroom_front.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z01: lantai dan objek depan kelas",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z01_exit_hallway.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z01: lorong keluar dan finish",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z02_river_far.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z02: langit dan hutan jauh",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z02_river_mid.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z02: sungai dan hutan tengah",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z02_river_front.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z02: air dan tepian depan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z02_safe_highground.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z02: tempat tinggi aman",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z03_hill_far.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z03: bukit jauh",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z03_hill_mid.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z03: lereng tengah",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z03_hill_front.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z03: jalur lereng depan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z03_safe_ground.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z03: tanah stabil dan finish",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z04_volcano_far.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z04: gunung jauh",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z04_volcano_mid.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z04: gunung api dan kawah",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z04_volcano_front.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z04: tanah berbatu dan abu",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "backgrounds/z04_evacuation_spot.svg",
+      "category": "backgrounds",
+      "width": 1920,
+      "height": 1080,
+      "use": "Z04: titik evakuasi aman",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/classroom_floor.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Lantai kelas seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/road_straight.svg",
+      "category": "tiles",
+      "width": 512,
+      "height": 256,
+      "use": "Jalan lurus seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/road_edge_left.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Tepi kiri jalan seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/road_edge_right.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Tepi kanan jalan seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/road_corner_left.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Sudut kiri jalan seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/road_corner_right.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Sudut kanan jalan seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/ground_straight.svg",
+      "category": "tiles",
+      "width": 512,
+      "height": 256,
+      "use": "Tanah lurus seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/ground_edge_left.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Tepi kiri tanah seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/ground_edge_right.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Tepi kanan tanah seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/water_edge.svg",
+      "category": "tiles",
+      "width": 256,
+      "height": 256,
+      "use": "Tepi air dan daratan seamless",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/safe_platform.svg",
+      "category": "tiles",
+      "width": 512,
+      "height": 256,
+      "use": "Platform tanah aman",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "tiles/finish_platform.svg",
+      "category": "tiles",
+      "width": 512,
+      "height": 256,
+      "use": "Ujung finish rapi",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "objects/table.svg",
+      "category": "objects",
+      "width": 256,
+      "height": 256,
+      "use": "Meja untuk berlindung",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/chair.svg",
+      "category": "objects",
+      "width": 192,
+      "height": 256,
+      "use": "Kursi kelas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/cabinet.svg",
+      "category": "objects",
+      "width": 256,
+      "height": 384,
+      "use": "Lemari yang dapat jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/shelf.svg",
+      "category": "objects",
+      "width": 256,
+      "height": 384,
+      "use": "Rak buku",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/lamp.svg",
+      "category": "objects",
+      "width": 256,
+      "height": 192,
+      "use": "Lampu plafon jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/book.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 96,
+      "use": "Buku jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/flower_pot.svg",
+      "category": "objects",
+      "width": 160,
+      "height": 192,
+      "use": "Pot bunga jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/roof_tile.svg",
+      "category": "objects",
+      "width": 192,
+      "height": 128,
+      "use": "Genting jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/window.svg",
+      "category": "objects",
+      "width": 384,
+      "height": 384,
+      "use": "Jendela kelas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/exit_door.svg",
+      "category": "objects",
+      "width": 320,
+      "height": 512,
+      "use": "Pintu keluar",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/driftwood.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 192,
+      "use": "Batang kayu hanyut",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/electric_water.svg",
+      "category": "objects",
+      "width": 384,
+      "height": 192,
+      "use": "Genangan air berbahaya",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/emergency_backpack.svg",
+      "category": "objects",
+      "width": 256,
+      "height": 320,
+      "use": "Tas siaga",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/safe_house.svg",
+      "category": "objects",
+      "width": 384,
+      "height": 384,
+      "use": "Bangunan tempat aman",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_document.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item dokumen penting",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_cash.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item uang tunai",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_medicine.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item obat",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_flashlight.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item senter",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_first_aid.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item kotak P3K",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_tv.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item televisi tidak prioritas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_game_console.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item konsol game tidak prioritas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_snack.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item snack tidak prioritas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_pillow.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item bantal tidak prioritas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/item_trophy.svg",
+      "category": "objects",
+      "width": 128,
+      "height": 128,
+      "use": "Item piala tidak prioritas",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/rock_small.svg",
+      "category": "objects",
+      "width": 160,
+      "height": 160,
+      "use": "Kerikil dan batu kecil",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/rock_large.svg",
+      "category": "objects",
+      "width": 320,
+      "height": 288,
+      "use": "Batu besar jatuh",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/fallen_tree.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 192,
+      "use": "Pohon tumbang",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/landslide_pile.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 384,
+      "use": "Model baru tumpukan tanah longsor",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/slope_crack.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 128,
+      "use": "Retakan lereng",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/hill_warning_sign.svg",
+      "category": "objects",
+      "width": 192,
+      "height": 256,
+      "use": "Tanda bahaya longsor",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/volcano.svg",
+      "category": "objects",
+      "width": 768,
+      "height": 768,
+      "use": "Gunung berapi side-view",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/lava_stream.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 192,
+      "use": "Aliran lava",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/glowing_rock.svg",
+      "category": "objects",
+      "width": 192,
+      "height": 192,
+      "use": "Batu pijar",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/ash_cloud.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 384,
+      "use": "Awan abu",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/evacuation_car.svg",
+      "category": "objects",
+      "width": 512,
+      "height": 256,
+      "use": "Mobil evakuasi",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/bird_flock.svg",
+      "category": "objects",
+      "width": 384,
+      "height": 256,
+      "use": "Hewan turun gunung",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "objects/volcanic_crack.svg",
+      "category": "objects",
+      "width": 384,
+      "height": 128,
+      "use": "Retakan vulkanik",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.1,
+        "y": 0.18,
+        "width": 0.8,
+        "height": 0.7
+      }
+    },
+    {
+      "file": "objects/evacuation_flag.svg",
+      "category": "objects",
+      "width": 192,
+      "height": 320,
+      "use": "Bendera titik evakuasi",
+      "pivot": [
+        0.5,
+        0.9
+      ],
+      "hitbox": {
+        "x": 0.12,
+        "y": 0.1,
+        "width": 0.76,
+        "height": 0.82
+      }
+    },
+    {
+      "file": "effects/dust_01.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Debu kecil",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/dust_02.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Debu sedang",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/dust_03.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Debu besar",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/splash_01.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 192,
+      "use": "Percikan air kecil",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/splash_02.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 192,
+      "use": "Percikan air sedang",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/splash_03.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 192,
+      "use": "Percikan air besar",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/water_ripple.svg",
+      "category": "effects",
+      "width": 384,
+      "height": 192,
+      "use": "Riak air",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/dizzy_stars.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Bintang pusing",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/warning_shadow.svg",
+      "category": "effects",
+      "width": 384,
+      "height": 192,
+      "use": "Bayangan peringatan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/pebbles.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Kerikil beterbangan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/rain_streaks.svg",
+      "category": "effects",
+      "width": 512,
+      "height": 512,
+      "use": "Hujan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/ash_particles.svg",
+      "category": "effects",
+      "width": 512,
+      "height": 512,
+      "use": "Partikel abu",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/lava_glow.svg",
+      "category": "effects",
+      "width": 384,
+      "height": 384,
+      "use": "Cahaya lava",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/hit_flash.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Kilatan terkena benda",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/sparkle.svg",
+      "category": "effects",
+      "width": 256,
+      "height": 256,
+      "use": "Kilau keberhasilan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "effects/confetti.svg",
+      "category": "effects",
+      "width": 512,
+      "height": 512,
+      "use": "Konfeti kemenangan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/logo_agent_siaga.svg",
+      "category": "ui",
+      "width": 640,
+      "height": 192,
+      "use": "Logo Agent Siaga",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_home.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon rumah",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_speaker.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon speaker aktif",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_speaker_off.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon speaker dicoret",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_target.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon target",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_star.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon bintang",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_heart_full.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon hati penuh",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_heart_empty.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon hati kosong",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_backpack.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon tas siaga",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_check.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon centang",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_close.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon tutup",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_pause.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Ikon pause",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_arrow_left.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Panah kiri",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_arrow_right.svg",
+      "category": "ui",
+      "width": 64,
+      "height": 64,
+      "use": "Panah kanan",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_player_name_arrow.svg",
+      "category": "ui",
+      "width": 256,
+      "height": 128,
+      "use": "Panah nama pemain",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/icon_finish_flag.svg",
+      "category": "ui",
+      "width": 128,
+      "height": 160,
+      "use": "Bendera finish",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/button_primary.svg",
+      "category": "ui",
+      "width": 480,
+      "height": 128,
+      "use": "Tombol utama",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/button_secondary.svg",
+      "category": "ui",
+      "width": 480,
+      "height": 128,
+      "use": "Tombol sekunder",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/button_next.svg",
+      "category": "ui",
+      "width": 360,
+      "height": 112,
+      "use": "Tombol lanjut",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/button_replay.svg",
+      "category": "ui",
+      "width": 360,
+      "height": 112,
+      "use": "Tombol ulangi",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/panel_hud.svg",
+      "category": "ui",
+      "width": 960,
+      "height": 160,
+      "use": "Panel HUD",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/panel_info_board.svg",
+      "category": "ui",
+      "width": 1024,
+      "height": 512,
+      "use": "Papan informasi",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/panel_quiz_question.svg",
+      "category": "ui",
+      "width": 1280,
+      "height": 360,
+      "use": "Panel pertanyaan kuis",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/quiz_answer_idle.svg",
+      "category": "ui",
+      "width": 640,
+      "height": 192,
+      "use": "Bingkai jawaban normal",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/quiz_answer_selected.svg",
+      "category": "ui",
+      "width": 640,
+      "height": 192,
+      "use": "Bingkai jawaban dipilih",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/quiz_answer_correct.svg",
+      "category": "ui",
+      "width": 640,
+      "height": 192,
+      "use": "Bingkai jawaban benar",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/quiz_answer_wrong.svg",
+      "category": "ui",
+      "width": 640,
+      "height": 192,
+      "use": "Bingkai jawaban salah",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/zone_badge_z01.svg",
+      "category": "ui",
+      "width": 128,
+      "height": 128,
+      "use": "Lencana Zona 01",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/zone_badge_z02.svg",
+      "category": "ui",
+      "width": 128,
+      "height": 128,
+      "use": "Lencana Zona 02",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/zone_badge_z03.svg",
+      "category": "ui",
+      "width": 128,
+      "height": 128,
+      "use": "Lencana Zona 03",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    },
+    {
+      "file": "ui/zone_badge_z04.svg",
+      "category": "ui",
+      "width": 128,
+      "height": 128,
+      "use": "Lencana Zona 04",
+      "pivot": [
+        0.5,
+        0.5
+      ],
+      "hitbox": null
+    }
+  ]
+}

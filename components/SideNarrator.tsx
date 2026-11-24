@@ -1,16 +1,28 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Shield, Loader } from 'lucide-react';
+import { Shield, Loader, X } from 'lucide-react';
 
 interface SideNarratorProps {
   message: string;
   isTyping?: boolean;
   status?: 'idle' | 'warning' | 'success' | 'error';
   visible: boolean;
+  /**
+   * "mission" menempatkan kartu di bawah area HUD (timer/nyawa/progres)
+   * supaya tidak menutupi informasi penting selama misi 3D berlangsung.
+   */
+  variant?: 'default' | 'mission';
 }
 
-export const SideNarrator: React.FC<SideNarratorProps> = ({ message, isTyping = false, status = 'idle', visible }) => {
+export const SideNarrator: React.FC<SideNarratorProps> = ({
+  message,
+  isTyping = false,
+  status = 'idle',
+  visible,
+  variant = 'default',
+}) => {
   const [displayedText, setDisplayedText] = useState('');
+  const [dismissed, setDismissed] = useState(false);
 
   // Typewriter effect
   useEffect(() => {
@@ -19,6 +31,7 @@ export const SideNarrator: React.FC<SideNarratorProps> = ({ message, isTyping = 
       return;
     }
 
+    setDismissed(false);
     // Reset when message changes
     setDisplayedText('');
 
@@ -45,7 +58,7 @@ export const SideNarrator: React.FC<SideNarratorProps> = ({ message, isTyping = 
       case 'warning': return 'border-orange-400 shadow-orange-400/50';
       case 'success': return 'border-green-400 shadow-green-400/50';
       case 'error': return 'border-red-400 shadow-red-400/50';
-      default: return 'border-blue-400 shadow-blue-400/50';
+      default: return 'border-indigo-400 shadow-indigo-400/50';
     }
   };
 
@@ -61,42 +74,65 @@ export const SideNarrator: React.FC<SideNarratorProps> = ({ message, isTyping = 
 
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !dismissed && message && (
         <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          className="fixed left-4 top-1/4 min-[1600px]:left-8 z-50 w-64 min-[1600px]:w-72 pointer-events-none hidden xl:block origin-top-left min-[1600px]:origin-left scale-[0.45] min-[1600px]:scale-100"
+          initial={{ opacity: 0, y: -10, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -10, scale: 0.96 }}
+          transition={{ duration: 0.22 }}
+          className={`fixed left-3 flex pointer-events-auto sm:left-4 ${
+            variant === 'mission'
+              ? 'top-[6.75rem] z-10 w-[min(18rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] sm:top-28 lg:left-6 lg:top-32'
+              : 'top-20 z-50 w-[min(19rem,calc(100vw-1.5rem))] max-w-[calc(100vw-1.5rem)] sm:top-24 md:left-6 lg:left-8 lg:w-72 xl:w-80'
+          }`}
+          style={{
+            left: 'max(0.75rem, env(safe-area-inset-left, 0.75rem))',
+          }}
         >
-          <div className={`bg-white/95 backdrop-blur-md rounded-3xl p-5 min-[1600px]:p-6 border-2 shadow-xl relative ${getBorderColor()}`}>
-            {/* Avatar Head */}
-            <div className="absolute -top-20 -left-8 w-36 h-36 flex items-center justify-center">
-              <img src={getAvatarImage()} alt="Kapten Siaga" className="w-full h-full object-contain filter drop-shadow-md" />
-            </div>
-
-            {/* Badge */}
-            <div className="absolute -top-14 left-20 bg-yellow-400 rounded-full p-2 border-2 border-white shadow-sm">
-              <Shield size={28} className="text-yellow-800" fill="currentColor" />
-            </div>
-
-            <div className="mt-14 ml-2">
-              <h4 className="text-lg font-bold text-gray-800 uppercase tracking-wider mb-2">Kapten Siaga</h4>
-
-              <div className="bg-blue-50/50 rounded-2xl p-3 min-h-[72px] min-[1600px]:min-h-[100px]">
-                {isTyping && !message ? (
-                  <div className="flex items-center gap-2 text-blue-500">
-                    <Loader size={20} className="animate-spin" />
-                    <span className="text-base font-medium">Menganalisa...</span>
-                  </div>
-                ) : (
-                  <p className="text-gray-700 text-lg font-medium leading-relaxed">
-                    {displayedText}
-                    {displayedText.length < message.length && (
-                      <span className="inline-block w-2 h-5 bg-blue-500 ml-1 animate-pulse"></span>
-                    )}
-                  </p>
-                )}
+          <div
+            className={`w-full overflow-hidden border-2 bg-white/95 shadow-2xl backdrop-blur-md ${
+              variant === 'mission' ? 'rounded-2xl p-2.5' : 'rounded-3xl p-3 lg:p-4'
+            } ${getBorderColor()}`}
+          >
+            <div className="flex min-w-0 items-center gap-2">
+              <div className="relative h-11 w-11 flex-shrink-0">
+                <img src={getAvatarImage()} alt="Kapten Siaga" className="h-full w-full object-contain drop-shadow-md" />
               </div>
+              <div className="min-w-0 flex-1">
+                <h4 className="truncate text-sm font-black uppercase tracking-wider text-gray-800 lg:text-base">
+                  Kapten Siaga
+                </h4>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-indigo-500">Pemandu Misi</p>
+              </div>
+              <div className="flex items-center gap-1">
+                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full border border-white bg-yellow-400 shadow-sm">
+                  <Shield size={15} className="text-yellow-800" fill="currentColor" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDismissed(true)}
+                  className="flex h-6 w-6 items-center justify-center rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  aria-label="Tutup pesan Kapten Siaga"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-2 min-w-0 rounded-2xl bg-blue-50/70 p-2.5 lg:p-3">
+              {isTyping && !message ? (
+                <div className="flex items-center gap-2 text-blue-500">
+                  <Loader size={16} className="animate-spin" />
+                  <span className="text-xs font-bold">Menganalisa...</span>
+                </div>
+              ) : (
+                <p className="text-xs font-bold leading-relaxed text-slate-700 sm:text-[13px] lg:text-sm">
+                  {displayedText}
+                  {displayedText.length < message.length && (
+                    <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-blue-500" />
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </motion.div>

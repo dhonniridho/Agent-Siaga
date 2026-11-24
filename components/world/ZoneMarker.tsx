@@ -20,7 +20,13 @@ export const ZoneMarker: React.FC<ZoneMarkerProps> = ({ zone, completed = false 
   const glow = useRef<THREE.Mesh>(null);
   const labelAnchor = useRef<THREE.Group>(null);
   const color = completed ? '#10b981' : zone.color;
-  const label = useZoneLabelTexture(zone.icon, zone.name, completed ? 'Misi selesai' : 'Titik misi', zone.color, completed);
+  const label = useZoneLabelTexture(
+    zone.icon,
+    zone.name,
+    completed ? 'Selesai • main lagi' : 'Titik misi',
+    zone.color,
+    completed
+  );
   const facing = Math.atan2(-zone.position[0], -zone.position[2]);
 
   useFrame((state) => {

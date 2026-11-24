@@ -1,5 +1,5 @@
 import React, { useEffect, useId, useRef } from 'react';
-import { Gamepad2, LogOut, Play, Trees } from 'lucide-react';
+import { LogOut, Play, Trees } from 'lucide-react';
 
 export interface ExitConfirmDialogProps {
   /** Apakah dialog sedang tampil. */
@@ -10,8 +10,6 @@ export interface ExitConfirmDialogProps {
   onConfirm: () => void;
   /** Opsional: keluar dari misi tetapi kembali ke dunia 3D (progres tetap). */
   onExitToWorld?: () => void;
-  /** Opsional: pindah ke Mode Klasik 2D (tombol kecil di dalam dialog). */
-  onClassicMode?: () => void;
   /** Opsional: dipanggil saat Esc ditekan ketika dialog masih tertutup. */
   onRequestOpen?: () => void;
   playSound?: (type: string) => void;
@@ -20,7 +18,6 @@ export interface ExitConfirmDialogProps {
   cancelLabel?: string;
   confirmLabel?: string;
   worldLabel?: string;
-  classicLabel?: string;
 }
 
 /**
@@ -35,7 +32,6 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
   onClose,
   onConfirm,
   onExitToWorld,
-  onClassicMode,
   onRequestOpen,
   playSound,
   title = 'Mau keluar dari misi?',
@@ -43,7 +39,6 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
   cancelLabel = 'Lanjut Main',
   confirmLabel = 'Keluar ke Menu',
   worldLabel = 'Kembali ke Dunia 3D',
-  classicLabel = 'Main Mode Klasik (2D)',
 }) => {
   const titleId = useId();
   const descriptionId = useId();
@@ -99,11 +94,6 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
     onExitToWorld?.();
   };
 
-  const handleClassicMode = () => {
-    playSound?.('click');
-    onClassicMode?.();
-  };
-
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-4">
       {/* Klik di luar dialog = batal keluar */}
@@ -156,17 +146,6 @@ export const ExitConfirmDialog: React.FC<ExitConfirmDialogProps> = ({
             >
               <Trees size={20} />
               {worldLabel}
-            </button>
-          )}
-
-          {onClassicMode && (
-            <button
-              type="button"
-              onClick={handleClassicMode}
-              className="mx-auto flex items-center justify-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold text-slate-500 underline decoration-slate-300 underline-offset-2 transition-colors hover:text-indigo-600 sm:text-xs"
-            >
-              <Gamepad2 size={14} />
-              {classicLabel}
             </button>
           )}
 

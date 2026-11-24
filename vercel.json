@@ -7,6 +7,8 @@
   "rewrites": [
     { "source": "/api/auth/:path*", "destination": "/api/auth" },
     { "source": "/api/game/:path*", "destination": "/api/game" },
-    { "source": "/api/teacher/:path*", "destination": "/api/teacher" }
+    { "source": "/api/teacher/:path*", "destination": "/api/teacher" },
+    { "source": "/guru", "destination": "/index.html" },
+    { "source": "/guru/(.*)", "destination": "/index.html" }
   ]
 }

@@ -3,6 +3,7 @@ import type { IncomingMessage } from 'node:http';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import { callGemini } from './server/gemini';
+import { createApiApp } from './server/api.mjs';
 
 function getClientIp(req: IncomingMessage): string {
   const forwarded = req.headers['x-forwarded-for'];
@@ -89,6 +90,20 @@ function geminiDevApiPlugin(env: Record<string, string>): Plugin {
   };
 }
 
+/**
+ * API lokal (auth guru, database SQLite, skor tim) untuk `npm run dev`.
+ * Server yang sama juga dipakai `server/start.mjs` pada mode produksi.
+ */
+function siagaApiPlugin(): Plugin {
+  return {
+    name: 'siaga-local-api',
+    configureServer(server) {
+      const app = createApiApp();
+      server.middlewares.use(app);
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
   return {
@@ -96,7 +111,7 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
-    plugins: [react(), geminiDevApiPlugin(env)],
+    plugins: [react(), siagaApiPlugin(), geminiDevApiPlugin(env)],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

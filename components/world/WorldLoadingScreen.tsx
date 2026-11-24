@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { AlertTriangle, Gamepad2, Loader2, MapPin, RefreshCw, Shield } from 'lucide-react';
+import { AlertTriangle, Loader2, LogOut, MapPin, RefreshCw, Shield } from 'lucide-react';
 import { WORLD_FACTS } from '../../constants';
 
 const TIPS = [
@@ -92,9 +92,8 @@ export const WorldLoadingScreen: React.FC<{ message?: string }> = ({
 
 /**
  * Tampilan bila dunia 3D gagal dimuat (mis. chunk tidak bisa diunduh).
- * Selalu sediakan jalan keluar ke Mode Klasik 2D.
  */
-export const WorldLoadError: React.FC<{ onClassicMode: () => void }> = ({ onClassicMode }) => (
+export const WorldLoadError: React.FC = () => (
   <div className="fixed inset-0 z-[60] flex items-center justify-center bg-gradient-to-br from-indigo-700 via-indigo-600 to-purple-700 p-5">
     <div className="w-full max-w-md rounded-[2rem] bg-white p-6 text-center shadow-2xl sm:p-8">
       <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-amber-100 text-amber-600">
@@ -102,8 +101,8 @@ export const WorldLoadError: React.FC<{ onClassicMode: () => void }> = ({ onClas
       </div>
       <h2 className="text-2xl font-black text-slate-800">Dunia 3D belum bisa dimuat</h2>
       <p className="mt-2 text-sm font-medium leading-relaxed text-slate-500">
-        Koneksi atau perangkat ini mungkin belum mendukung dunia 3D. Petualangan kalian
-        tetap bisa dilanjutkan lewat <b>Mode Klasik</b>.
+        Koneksi atau perangkat ini mungkin belum mendukung WebGL. Muat ulang halaman,
+        atau gunakan browser terbaru seperti Chrome atau Firefox.
       </p>
       <div className="mt-6 space-y-3">
         <button
@@ -112,22 +111,22 @@ export const WorldLoadError: React.FC<{ onClassicMode: () => void }> = ({ onClas
         >
           <RefreshCw size={20} /> Coba Lagi
         </button>
-        <button
-          onClick={onClassicMode}
+        <a
+          href="/"
           className="flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-slate-200 bg-white px-5 py-4 text-base font-black text-slate-700 shadow-sm transition-colors hover:bg-slate-50"
         >
-          <Gamepad2 size={20} /> Mode Klasik (2D)
-        </button>
+          <LogOut size={20} /> Kembali ke Menu
+        </a>
       </div>
     </div>
   </div>
 );
 
 export class WorldLoadBoundary extends React.Component<
-  { children: React.ReactNode; onClassicMode: () => void },
+  { children: React.ReactNode },
   { failed: boolean }
 > {
-  constructor(props: { children: React.ReactNode; onClassicMode: () => void }) {
+  constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { failed: false };
   }
@@ -138,7 +137,7 @@ export class WorldLoadBoundary extends React.Component<
 
   render() {
     if (this.state.failed) {
-      return <WorldLoadError onClassicMode={this.props.onClassicMode} />;
+      return <WorldLoadError />;
     }
     return this.props.children;
   }

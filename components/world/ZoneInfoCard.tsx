@@ -1,12 +1,15 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
   CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   Lightbulb,
   ListChecks,
   Play,
+  RefreshCw,
   Target,
   X,
 } from 'lucide-react';
@@ -17,6 +20,29 @@ import { ZONE_INFO } from './zoneInfo';
 
 // Samakan dengan komponen lain: cast agar tipe framer-motion tidak bentrok.
 const MotionDiv = motion.div as any;
+
+const ZONE_PHOTOS: Partial<Record<DisasterType, string[]>> = {
+  EARTHQUAKE: [
+    '/assets/earthquake-road-1.jpg',
+    '/assets/earthquake-city-2.jpg',
+    '/assets/earthquake-road-3.jpg',
+  ],
+  FLOOD: [
+    '/assets/flood-1.jpg',
+    '/assets/flood-2.jpg',
+    '/assets/flood-3.jpg',
+  ],
+  LANDSLIDE: [
+    '/assets/landslide-1.jpg',
+    '/assets/landslide-2.jpg',
+    '/assets/landslide-3.jpg',
+  ],
+  VOLCANO: [
+    '/assets/volcano-1.jpg',
+    '/assets/volcano-2.jpg',
+    '/assets/volcano-3.jpg',
+  ],
+};
 
 interface ZoneInfoCardProps {
   zone: MissionZone;
@@ -46,6 +72,9 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
 }) => {
   const info = ZONE_INFO[zone.id];
   const facts = WORLD_FACTS[zone.id];
+  const photos = ZONE_PHOTOS[zone.id];
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [photoDirection, setPhotoDirection] = useState(1);
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
 
@@ -55,9 +84,15 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
   };
 
   const handleStart = () => {
-    if (completed) return;
     playSound?.('click');
     onStartMission(zone.id);
+  };
+
+  const handlePhotoChange = (direction: number) => {
+    if (!photos?.length) return;
+    playSound?.('click');
+    setPhotoDirection(direction >= 0 ? 1 : -1);
+    setPhotoIndex((current) => (current + direction + photos.length) % photos.length);
   };
 
   // Esc menutup kartu ini saja. Listener capture + stopPropagation mencegah
@@ -139,50 +174,120 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
               background: `linear-gradient(150deg, ${zone.color} 0%, #172033 118%)`,
             }}
           >
-            {/* Pola lingkaran ringan, tanpa aset luar */}
-            <div
-              className="pointer-events-none absolute inset-0 opacity-40"
-              style={{
-                backgroundImage:
-                  'radial-gradient(circle at 18% 18%, rgba(255,255,255,0.55) 0, transparent 34%), radial-gradient(circle at 82% 78%, rgba(255,255,255,0.35) 0, transparent 36%)',
-              }}
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full border-[18px] border-white/10"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute -bottom-14 -left-12 h-48 w-48 rounded-full border-[22px] border-white/10"
-              aria-hidden="true"
-            />
+            {photos ? (
+              <div className="absolute inset-0">
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.img
+                    key={photos[photoIndex]}
+                    src={photos[photoIndex]}
+                    alt={`${info.title}, foto ${photoIndex + 1} dari ${photos.length}`}
+                    initial={{ opacity: 0, x: photoDirection * 28 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: photoDirection * -28 }}
+                    transition={{ duration: 0.22, ease: 'easeOut' }}
+                    className="absolute inset-0 h-full w-full object-cover"
+                  />
+                </AnimatePresence>
+                <div
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/85"
+                  aria-hidden="true"
+                />
 
-            <div className="relative flex items-center gap-4 text-white sm:flex-col sm:gap-5 sm:text-center">
-              <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-[1.5rem] border-4 border-white/35 bg-white/15 shadow-2xl sm:h-40 sm:w-40 sm:rounded-[2rem]">
-                <div className="absolute inset-2 rounded-[1.1rem] border border-white/25 sm:inset-3 sm:rounded-[1.5rem]" />
-                <span
-                  className="text-6xl leading-none drop-shadow-lg sm:text-8xl"
-                  role="img"
-                  aria-label={info.title}
+                <button
+                  type="button"
+                  onClick={() => handlePhotoChange(-1)}
+                  className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-950/70 active:scale-95"
+                  aria-label="Foto sebelumnya"
+                  title="Foto sebelumnya"
                 >
-                  {zone.icon}
-                </span>
-              </div>
+                  <ChevronLeft size={22} />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handlePhotoChange(1)}
+                  className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-950/70 active:scale-95"
+                  aria-label="Foto berikutnya"
+                  title="Foto berikutnya"
+                >
+                  <ChevronRight size={22} />
+                </button>
 
-              <div className="min-w-0 text-left sm:text-center">
-                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/75 sm:text-xs">
-                  Zona {info.code}
-                </p>
-                <p className="font-display mt-0.5 text-2xl font-black leading-tight drop-shadow-sm sm:mt-1 sm:text-3xl">
-                  {info.title}
-                </p>
+                <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-5 pt-16 text-white sm:px-6 sm:pb-8">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80 sm:text-xs">
+                    Zona {info.code}
+                  </p>
+                  <p className="font-display mt-1 text-2xl font-black leading-tight drop-shadow-sm sm:text-3xl">
+                    {info.title}
+                  </p>
+                  <div className="mt-3 flex items-center gap-1.5" aria-label={`Foto ${photoIndex + 1} dari ${photos.length}`}>
+                    {photos.map((photo, index) => (
+                      <button
+                        key={photo}
+                        type="button"
+                        onClick={() => {
+                          playSound?.('click');
+                          setPhotoDirection(index >= photoIndex ? 1 : -1);
+                          setPhotoIndex(index);
+                        }}
+                        className={`h-2 rounded-full transition-all ${index === photoIndex ? 'w-7 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`}
+                        aria-label={`Buka foto ${index + 1}`}
+                        aria-current={index === photoIndex ? 'true' : undefined}
+                      />
+                    ))}
+                  </div>
+                  <p className="mt-1.5 text-[9px] font-bold text-white/55">
+                    Foto kejadian nyata · Wikimedia Commons
+                  </p>
+                </div>
               </div>
-            </div>
+            ) : (
+              <>
+                {/* Pola lingkaran ringan untuk zona yang belum memiliki foto. */}
+                <div
+                  className="pointer-events-none absolute inset-0 opacity-40"
+                  style={{
+                    backgroundImage:
+                      'radial-gradient(circle at 18% 18%, rgba(255,255,255,0.55) 0, transparent 34%), radial-gradient(circle at 82% 78%, rgba(255,255,255,0.35) 0, transparent 36%)',
+                  }}
+                  aria-hidden="true"
+                />
+                <div
+                  className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full border-[18px] border-white/10"
+                  aria-hidden="true"
+                />
+                <div
+                  className="pointer-events-none absolute -bottom-14 -left-12 h-48 w-48 rounded-full border-[22px] border-white/10"
+                  aria-hidden="true"
+                />
 
-            <div className="absolute bottom-3 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/80 sm:flex">
-              <Target size={12} />
-              Jelajah Alam Siaga
-            </div>
+                <div className="relative flex items-center gap-4 p-4 text-white sm:flex-col sm:gap-5 sm:p-6 sm:text-center">
+                  <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-[1.5rem] border-4 border-white/35 bg-white/15 shadow-2xl sm:h-40 sm:w-40 sm:rounded-[2rem]">
+                    <div className="absolute inset-2 rounded-[1.1rem] border border-white/25 sm:inset-3 sm:rounded-[1.5rem]" />
+                    <span
+                      className="text-6xl leading-none drop-shadow-lg sm:text-8xl"
+                      role="img"
+                      aria-label={info.title}
+                    >
+                      {zone.icon}
+                    </span>
+                  </div>
+
+                  <div className="min-w-0 text-left sm:text-center">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/75 sm:text-xs">
+                      Zona {info.code}
+                    </p>
+                    <p className="font-display mt-0.5 text-2xl font-black leading-tight drop-shadow-sm sm:mt-1 sm:text-3xl">
+                      {info.title}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="absolute bottom-3 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/80 sm:flex">
+                  <Target size={12} />
+                  Jelajah Alam Siaga
+                </div>
+              </>
+            )}
           </div>
 
           {/* ---------------- Panel teks kanan ---------------- */}
@@ -203,6 +308,16 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
               </h2>
               <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600 sm:text-base">
                 {info.intro}
+              </p>
+            </div>
+
+            <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-3 sm:p-3.5">
+              <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
+                <Target size={13} />
+                TUJUAN PEMBELAJARAN
+              </p>
+              <p className="mt-1.5 text-[13px] font-bold leading-snug text-slate-700 sm:text-sm">
+                Setelah menyelesaikan zona ini, kamu diharapkan mampu {info.learningObjective.charAt(0).toLowerCase() + info.learningObjective.slice(1)}
               </p>
             </div>
 
@@ -260,7 +375,11 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
                 <CheckCircle2 size={18} className="flex-shrink-0 text-slate-300" />
               )}
               <span className="min-w-0 flex-1">
-                {read ? 'Papan sudah dibaca' : 'Membuka papan informasi...'}
+                {completed
+                  ? 'Misi selesai — skor terbaikmu tersimpan. Main lagi kapan saja!'
+                  : read
+                    ? 'Papan sudah dibaca'
+                    : 'Membuka papan informasi...'}
               </span>
               {completed && (
                 <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white">
@@ -271,17 +390,24 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
             </div>
 
             <div className="mt-1 flex flex-col gap-2">
-              {!completed && (
-                <button
-                  type="button"
-                  onClick={handleStart}
-                  className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-base font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-600 active:scale-[0.98]"
-                  title="Mulai misi zona ini"
-                >
-                  <Play size={20} fill="currentColor" />
-                  Mulai Misi
-                </button>
-              )}
+              <button
+                type="button"
+                onClick={handleStart}
+                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-base font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-600 active:scale-[0.98]"
+                title={completed ? 'Main lagi misi zona ini' : 'Mulai misi zona ini'}
+              >
+                {completed ? (
+                  <>
+                    <RefreshCw size={19} />
+                    Main Lagi
+                  </>
+                ) : (
+                  <>
+                    <Play size={20} fill="currentColor" />
+                    Mulai Misi
+                  </>
+                )}
+              </button>
 
               <button
                 type="button"

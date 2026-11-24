@@ -1,16 +1,12 @@
 export type GamePhase =
   | 'MENU'
-  | 'TEAM_SETUP' // Changed from AVATAR_SELECT to TEAM_SETUP
+  | 'TEAM_SETUP'
+  | 'GUIDE' // Panduan singkat setelah tim mendaftar
   | 'WORLD_3D' // Dunia jelajah 3D (pintu masuk misi)
-  | 'LEVEL_SELECT'
-  | 'BRIEFING'
   | 'ACTION'
   | 'RECOVERY'
-  | 'VICTORY'
-  | 'FLOOD_PRE_DISASTER'
-  | 'FLOOD_PREPARE'
-  | 'FLOOD_ACTION'
-  | 'FLOOD_POST_DISASTER';
+  | 'MISSION_COMPLETE' // Perayaan setelah kuis akhir misi
+  | 'VICTORY';
 
 export type DisasterType = 'EARTHQUAKE' | 'FLOOD' | 'VOLCANO' | 'LANDSLIDE';
 
