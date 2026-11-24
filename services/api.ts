@@ -165,10 +165,10 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
   }
 
   if (!response.ok) {
-    throw new ApiError(
-      json?.error || `Permintaan gagal (${response.status}).`,
-      response.status
-    );
+    const errorMsg =
+      json?.error ||
+      (text && text.length < 300 ? text : `Permintaan gagal (${response.status}).`);
+    throw new ApiError(errorMsg, response.status);
   }
   return json as T;
 }

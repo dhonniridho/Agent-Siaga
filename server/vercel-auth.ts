@@ -4,12 +4,13 @@ import { neon } from '@neondatabase/serverless';
 type DbRow = Record<string, any>;
 
 function databaseUrl() {
-  return (
+  const url = (
     process.env.POSTGRES_URL ||
     process.env.DATABASE_URL ||
     process.env.NEON_DATABASE_URL ||
     ''
-  );
+  ).trim();
+  return url.replace(/^["']|["']$/g, '');
 }
 
 export function getSql() {
@@ -168,10 +169,37 @@ export function clearCookie(res: any) {
 }
 
 export function sendJson(res: any, status: number, body: unknown) {
-  res.status(status).json(body);
+  try {
+    if (typeof res.status === 'function' && typeof res.json === 'function') {
+      res.status(status).json(body);
+      return;
+    }
+  } catch (err) {
+    console.error('[sendJson helper error]', err);
+  }
+
+  try {
+    res.statusCode = status;
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-store');
+    res.end(JSON.stringify(body));
+  } catch (err) {
+    console.error('[sendJson fallback error]', err);
+  }
 }
 
 export async function readBody(req: any): Promise<Record<string, unknown>> {
+  if (Buffer.isBuffer(req.body)) {
+    try {
+      const parsed = JSON.parse(req.body.toString('utf8'));
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
+        ? (parsed as Record<string, unknown>)
+        : {};
+    } catch {
+      return {};
+    }
+  }
+
   if (req.body && typeof req.body === 'object') return req.body;
   if (typeof req.body === 'string') {
     try {

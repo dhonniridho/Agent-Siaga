@@ -36,6 +36,7 @@ export default async function handler(
       classes: await teacherClasses(teacherId),
     });
   } catch (error) {
+    console.error('[AUTH LOGIN ERROR]', error);
     sendJson(res, 500, {
       error: error instanceof Error ? error.message : 'Gagal masuk.',
     });
