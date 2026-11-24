@@ -15,6 +15,8 @@ export interface PerformanceData {
   // RECOVERY phase details
   quizCorrect?: number;
   quizTotal?: number;
+  /** Penjelasan dari soal yang dijawab benar — dipakai di layar hasil kuis. */
+  masteredPoints?: string[];
   // Items brought (briefing/bag)
   selectedItems?: string[];
   missedItems?: string[];

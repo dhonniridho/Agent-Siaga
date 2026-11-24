@@ -58,6 +58,7 @@ export interface TeacherOverview {
 
 export interface TeamProgressEntry {
   bestScore: number;
+  bestRecoveryScore: number;
   attempts: number;
   lastPlayed: string;
 }
@@ -65,6 +66,7 @@ export interface TeamProgressEntry {
 export interface ClassTeam {
   id: number;
   name: string;
+  studentName: string | null;
   avatarId: string | null;
   totalScore: number;
   missionsDone: number;
@@ -88,6 +90,7 @@ export interface TeamDetail {
   team: {
     id: number;
     name: string;
+    studentName: string | null;
     avatarId: string | null;
     className: string;
     classCode: string;
@@ -103,6 +106,7 @@ export interface TeamSession {
   team: {
     id: number;
     name: string;
+    studentName: string | null;
     avatarId: string | null;
     className: string;
     classCode: string;
@@ -246,10 +250,16 @@ export const clearTeamSession = () => {
   localStorage.removeItem(TEAM_CLASS_KEY);
 };
 
+export const setTeamSessionToken = (token: string | null) => {
+  if (token) localStorage.setItem(TEAM_TOKEN_KEY, token);
+  else localStorage.removeItem(TEAM_TOKEN_KEY);
+};
+
 export async function registerTeam(
   teamName: string,
   avatarId: string | null,
-  classCode: string
+  classCode: string,
+  studentName: string
 ): Promise<TeamSession> {
   // Server lokal mengirim `teamToken`; di klien kita simpan sebagai `token`.
   const response = await api<{
@@ -257,7 +267,7 @@ export async function registerTeam(
     team: TeamSession['team'];
   }>('/api/game/teams', {
     method: 'POST',
-    body: JSON.stringify({ teamName, avatarId, classCode }),
+    body: JSON.stringify({ teamName, studentName, avatarId, classCode }),
   });
 
   localStorage.setItem(TEAM_TOKEN_KEY, response.teamToken);
@@ -281,7 +291,7 @@ export const saveResult = (
 ) => {
   const token = localStorage.getItem(TEAM_TOKEN_KEY);
   if (!token) {
-    return Promise.resolve({ ok: false, offline: true, totalScore: 0, progress: {} });
+    return Promise.reject(new ApiError('Sesi tim belum terhubung ke server. Daftarkan tim kembali.', 401));
   }
   return api<{
     ok: boolean;

@@ -40,11 +40,12 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       }
       const body = await readBody(req);
       const teamName = cleanText(body.teamName, 24);
+      const studentName = cleanText(body.studentName, 24);
       const avatarId = cleanText(body.avatarId, 10);
       const classCode = cleanText(body.classCode, 20).toUpperCase();
 
-      if (!teamName) {
-        sendJson(res, 400, { error: 'Nama tim wajib diisi.' });
+      if (!teamName || !studentName) {
+        sendJson(res, 400, { error: 'Nama siswa dan nama tim wajib diisi.' });
         return;
       }
 
@@ -71,11 +72,11 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       let team = teamRows[0];
 
       if (team) {
-        await sql`UPDATE teams SET avatar_id = ${avatarId || team.avatar_id || null}, last_seen = NOW() WHERE id = ${team.id}`;
+        await sql`UPDATE teams SET student_name = ${studentName}, avatar_id = ${avatarId || team.avatar_id || null}, last_seen = NOW() WHERE id = ${team.id}`;
       } else {
         const inserted = await sql`
-          INSERT INTO teams (class_id, name, avatar_id)
-          VALUES (${classRow.id}, ${teamName}, ${avatarId || null})
+          INSERT INTO teams (class_id, name, student_name, avatar_id)
+          VALUES (${classRow.id}, ${teamName}, ${studentName}, ${avatarId || null})
           RETURNING *
         `;
         team = inserted[0];
@@ -89,6 +90,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         team: {
           id: Number(team.id),
           name: team.name,
+          studentName: team.student_name || null,
           avatarId: team.avatar_id,
           className: classRow.name,
           classCode: classRow.code,
@@ -128,6 +130,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         team: {
           id: Number(team.id),
           name: team.name,
+          studentName: team.student_name || null,
           avatarId: team.avatar_id,
           className: team.class_name || '-',
           classCode: team.class_code || '-',

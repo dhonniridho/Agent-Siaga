@@ -418,6 +418,7 @@ export function createApiApp() {
       teams: teams.map((row) => ({
         id: Number(row.id),
         name: row.name,
+        studentName: row.student_name || null,
         avatarId: row.avatar_id,
         totalScore: Number(row.total_score) || 0,
         missionsDone: Number(row.missions_done) || 0,
@@ -450,6 +451,7 @@ export function createApiApp() {
       team: {
         id: Number(team.id),
         name: team.name,
+        studentName: team.student_name || null,
         avatarId: team.avatar_id,
         className: classRow?.name || '-',
         classCode: classRow?.code || '-',
@@ -556,11 +558,12 @@ export function createApiApp() {
 
   app.post('/api/game/teams', (req, res) => {
     const teamName = cleanText(req.body?.teamName, 24);
+    const studentName = cleanText(req.body?.studentName, 24);
     const avatarId = cleanText(req.body?.avatarId, 10);
     const classCode = cleanText(req.body?.classCode, 20).toUpperCase();
 
-    if (!teamName) {
-      res.status(400).json({ error: 'Nama tim wajib diisi.' });
+    if (!teamName || !studentName) {
+      res.status(400).json({ error: 'Nama siswa dan nama tim wajib diisi.' });
       return;
     }
 
@@ -579,14 +582,15 @@ export function createApiApp() {
       .get(classRow.id, teamName);
 
     if (team) {
-      db.prepare("UPDATE teams SET avatar_id = ?, last_seen = datetime('now') WHERE id = ?").run(
+      db.prepare("UPDATE teams SET student_name = ?, avatar_id = ?, last_seen = datetime('now') WHERE id = ?").run(
+        studentName,
         avatarId || team.avatar_id || null,
         team.id
       );
     } else {
       const info = db
-        .prepare('INSERT INTO teams (class_id, name, avatar_id) VALUES (?, ?, ?)')
-        .run(classRow.id, teamName, avatarId || null);
+        .prepare('INSERT INTO teams (class_id, name, student_name, avatar_id) VALUES (?, ?, ?, ?)')
+        .run(classRow.id, teamName, studentName, avatarId || null);
       team = findTeamById(Number(info.lastInsertRowid));
     }
 
@@ -600,6 +604,7 @@ export function createApiApp() {
       team: {
         id: Number(team.id),
         name: team.name,
+        studentName: team.student_name || null,
         avatarId: team.avatar_id,
         className: classRow.name,
         classCode: classRow.code,
@@ -616,6 +621,7 @@ export function createApiApp() {
       team: {
         id: Number(req.team.id),
         name: req.team.name,
+        studentName: req.team.student_name || null,
         avatarId: req.team.avatar_id,
         className: classRow?.name || '-',
         classCode: classRow?.code || '-',

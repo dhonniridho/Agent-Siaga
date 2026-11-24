@@ -36,11 +36,9 @@ export interface MissionZone {
 
 export interface InfoBoard {
   id: string;
-  zoneId: DisasterType | 'GUIDE';
+  zoneId: DisasterType;
   position: [number, number, number];
   rotation: number;
-  /** `guide` = papan panduan empat bencana di area spawn. */
-  kind?: 'zone' | 'guide';
 }
 
 export interface Trail {
@@ -146,26 +144,29 @@ export const FLOWER_SPOTS: Array<{ x: number; z: number; color: string }> = [
  * Empat papan ini bagian dari empat lokasi misi.
  */
 export const INFO_BOARDS: InfoBoard[] = [
-  // Papan panduan di area spawn: ringkasan keempat zona bencana.
-  { id: 'board-panduan', zoneId: 'GUIDE', kind: 'guide', position: [3.2, 0, 12.4], rotation: -0.45 },
   { id: 'board-earthquake', zoneId: 'EARTHQUAKE', position: [-8.5, 0, -16], rotation: 0.5 },
   { id: 'board-flood', zoneId: 'FLOOD', position: [10, 0, 5], rotation: -2.3 },
   { id: 'board-landslide', zoneId: 'LANDSLIDE', position: [-9.5, 0, 18], rotation: 2.5 },
   { id: 'board-volcano', zoneId: 'VOLCANO', position: [19, 0, -7], rotation: -1.2 },
 ];
 
+/**
+ * Papan "Panduan Bermain" di area terbuka base camp (sisi kiri jalur utama,
+ * di depan tenda dan aman dari pohon/api unggun). Papan menghadap kamera
+ * orang ketiga pemain supaya tulisannya langsung terbaca jelas sejak spawn —
+ * tidak lagi tertutup pohon birch maupun HUD minimap di kanan atas.
+ */
+export const GUIDE_BOARD = {
+  id: 'board-panduan',
+  position: [-2.2, 0, 14] as [number, number, number],
+  rotation: 0.28,
+};
+
+/** Jarak maksimal pemain ke papan panduan agar kartu petunjuk terbuka. */
+export const GUIDE_BOARD_READ_RADIUS = 3;
+
 /** Jarak maksimal pemain ke papan agar panel fakta terbuka. */
 export const INFO_BOARD_READ_RADIUS = 3;
-
-/** Area pandang dan berdiri yang harus bebas dari dekorasi di depan papan. */
-export const INFO_BOARD_CLEAR_RADIUS = 4;
-
-export function isInsideInfoBoardClearZone(x: number, z: number, padding = 0): boolean {
-  return INFO_BOARDS.some(
-    (board) =>
-      Math.hypot(x - board.position[0], z - board.position[2]) < INFO_BOARD_CLEAR_RADIUS + padding
-  );
-}
 
 /** Tabrakan sederhana berbentuk kotak (AABB) di sumbu XZ. */
 export const COLLIDERS: BoxCollider[] = [
@@ -212,22 +213,26 @@ export const COLLIDERS: BoxCollider[] = [
   // Tebing longsor
   { minX: -28.5, maxX: -17.5, minZ: 10.5, maxZ: 23.5 },
   // Pohon (batang)
-  ...TREES.filter((tree) => !isInsideInfoBoardClearZone(tree.x, tree.z, tree.scale * 1.5)).map((tree) => ({
+  ...TREES.map((tree) => ({
     minX: tree.x - 0.5,
     maxX: tree.x + 0.5,
     minZ: tree.z - 0.5,
     maxZ: tree.z + 0.5,
   })),
   // Batu besar
-  ...ROCKS.filter(
-    (rock) =>
-      rock.scale >= 0.9 && !isInsideInfoBoardClearZone(rock.x, rock.z, rock.scale)
-  ).map((rock) => ({
+  ...ROCKS.filter((rock) => rock.scale >= 0.9).map((rock) => ({
     minX: rock.x - rock.scale * 0.75,
     maxX: rock.x + rock.scale * 0.75,
     minZ: rock.z - rock.scale * 0.75,
     maxZ: rock.z + rock.scale * 0.75,
   })),
+  // Papan panduan bermain di base camp
+  {
+    minX: GUIDE_BOARD.position[0] - 0.8,
+    maxX: GUIDE_BOARD.position[0] + 0.8,
+    minZ: GUIDE_BOARD.position[2] - 1.5,
+    maxZ: GUIDE_BOARD.position[2] + 1.5,
+  },
   // Papan informasi fakta
   ...INFO_BOARDS.map((board) => ({
     minX: board.position[0] - 0.9,

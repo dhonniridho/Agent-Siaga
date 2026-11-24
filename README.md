@@ -13,13 +13,13 @@ Game edukasi mitigasi bencana untuk siswa sekolah dasar. Seluruh permainan — m
 ## Alur Permainan
 
 1. **Menu utama** → tekan **DAFTARKAN TIM!** (tombol **MODE GURU · DASHBOARD** tersedia di bawahnya untuk guru).
-2. Isi nama tim, pilih maskot, dan masukkan **kode kelas** dari guru (opsional tetapi disarankan).
+2. Isi nama agen/siswa dan nama tim, pilih maskot, lalu masukkan **kode kelas** dari guru (opsional tetapi disarankan).
 3. **Panduan onboarding 3D** muncul otomatis: satu slide pembuka, empat slide bencana, dan satu slide kontrol.
 4. Masuk ke **Dunia 3D**. Di area spawn ada **papan panduan 3D** bertuliskan ringkasan keempat zona; dekati dan tekan **E** (atau tombol **Baca**) untuk membuka kartu panduan lengkap.
 5. Jelajahi pulau Siaga dan dekati tiang zona misi → tekan **Mulai Misi**.
 6. Selesaikan **misi evakuasi 3D** sesuai jenis bencana.
 7. **Kuis pemulihan 3D langsung terbuka** setelah misi selesai (tanpa layar penghalang).
-8. Kembali ke dunia 3D; zona ditandai selesai dan skor tersimpan.
+8. Kembali ke dunia 3D; zona ditandai selesai dan hasil misi dikirim ke database server.
 9. Setelah keempat zona selesai, tampil **layar kemenangan** dan **papan peringkat kelas**.
 
 Tidak ada lagi jalur permainan 2D/Mode Klasik. Seluruh misi dan kuis menggunakan scene Three.js.
@@ -95,16 +95,17 @@ Nilai seed dapat diubah lewat environment variable (lihat bagian Konfigurasi).
 
 ---
 
-## Backend Lokal & Database
+## Backend & Database
 
-- **Express 5** sebagai server API.
-- **SQLite lokal** melalui modul bawaan Node `node:sqlite` (`DatabaseSync`).
+- Saat dijalankan lokal, **Express 5** memakai **SQLite** melalui modul bawaan Node `node:sqlite` (`DatabaseSync`).
+- Di Vercel, API serverless memakai **Neon Postgres**; konfigurasikan `POSTGRES_URL`, `DATABASE_URL`, atau `NEON_DATABASE_URL`.
 - Lokasi database: `data/agent-siaga.db` (dibuat otomatis).
-- Tabel: `teachers`, `classes`, `teams`, `results`, `app_meta`.
+- Tabel: `teachers`, `classes`, `teams` (termasuk `student_name`), `results`, `app_meta`.
 - `results` menyimpan `action_score`, `recovery_score`, `total_score`, `duration_seconds` (waktu pengerjaan), `detail`, dan `created_at`. Migrasi otomatis bila database lama dibuka.
 - Password guru di-hash dengan **scrypt**.
 - Token sesi ditandatangani HMAC-SHA256 dan disimpan di cookie HttpOnly.
-- Token tim disimpan di `localStorage` (`siaga.teamToken`) dan dikirim lewat header `x-team-token`.
+- Token tim disimpan di `localStorage` (`siaga.teamToken`) dan dikirim lewat header `x-team-token`. Hasil tiap misi selesai dikirim ke server.
+- Sesi login siswa disimpan di browser yang digunakan saat mendaftar; login hanya dengan nama siswa lintas perangkat belum tersedia.
 
 ### Endpoint utama
 
@@ -121,14 +122,14 @@ Nilai seed dapat diubah lewat environment variable (lihat bagian Konfigurasi).
 | `GET` | `/api/teacher/classes/:id/teams` | Tim dalam kelas |
 | `GET/DELETE` | `/api/teacher/teams/:id` | Detail / hapus tim |
 | `GET` | `/api/teacher/export.csv` | Ekspor rekap CSV |
-| `POST` | `/api/game/teams` | Registrasi tim siswa |
+| `POST` | `/api/game/teams` | Registrasi siswa dan tim |
 | `GET` | `/api/game/team` | Sesi tim aktif |
 | `POST` | `/api/game/results` | Simpan hasil misi |
 | `GET` | `/api/game/leaderboard` | Papan peringkat kelas |
 
-### Mode offline
+### Ketersediaan server
 
-Jika server lokal tidak aktif, siswa tetap bisa mendaftar dan bermain. Skor ditampilkan di layar kemenangan, tetapi tidak tersimpan ke database dan papan peringkat kelas memakai fallback tim tersebut. Untuk menyimpan hasil, jalankan server lokal.
+Pendaftaran tim dan penyimpanan hasil membutuhkan API server. Jika API tidak tersedia, formulir menampilkan pesan gagal dan tidak memulai sesi baru; coba lagi setelah server aktif. Di Vercel, pastikan URL database Neon sudah dikonfigurasi.
 
 ---
 
@@ -187,6 +188,8 @@ SIAGA_INVITE_CODE=AGENT-SIAGA
 ```
 
 Jangan commit `.env.local`. Folder `data/` dan file database juga diabaikan oleh Git.
+
+Untuk Vercel, tambahkan salah satu variabel URL Neon (`POSTGRES_URL`, `DATABASE_URL`, atau `NEON_DATABASE_URL`) pada **Project Settings → Environment Variables**. Jangan masukkan kredensial database ke file frontend.
 
 ---
 

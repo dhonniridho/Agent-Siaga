@@ -871,7 +871,8 @@ const LandslideDiorama: React.FC<{ completed: boolean }> = ({ completed }) => {
 
       {/* Papan peringatan sederhana */}
       <group position={[4.9, 0, -2.2]} rotation-y={-0.5}>
-        <mesh position={[0, 1.2, 0]}>
+        {/* Tiang di belakang papan (Z negatif) supaya permukaan depannya bersih. */}
+        <mesh position={[0, 1.2, -0.15]}>
           <cylinderGeometry args={[0.06, 0.08, 2.4, 6]} />
           <meshStandardMaterial color="#5c3f24" roughness={1} />
         </mesh>

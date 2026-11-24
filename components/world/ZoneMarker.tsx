@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Billboard, Float } from '@react-three/drei';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
@@ -9,24 +9,34 @@ import { ZoneDiorama } from './ZoneDiorama';
 interface ZoneMarkerProps {
   zone: MissionZone;
   completed?: boolean;
+  /** Dipanggil saat penanda diklik (buka kartu / misi zona). */
+  onSelect?: () => void;
 }
 
 /**
  * Penanda zona misi: tiang bercahaya + cincin + papan nama.
- * Akan dipakai untuk tombol "Mulai Misi" di Tahap 2.
+ * Bisa diklik langsung dari dunia 3D, dan memberi umpan balik hover.
  */
-export const ZoneMarker: React.FC<ZoneMarkerProps> = ({ zone, completed = false }) => {
+export const ZoneMarker: React.FC<ZoneMarkerProps> = ({ zone, completed = false, onSelect }) => {
   const ring = useRef<THREE.Mesh>(null);
   const glow = useRef<THREE.Mesh>(null);
   const labelAnchor = useRef<THREE.Group>(null);
+  const hovered = useRef(false);
   const color = completed ? '#10b981' : zone.color;
-  const label = useZoneLabelTexture(
-    zone.icon,
-    zone.name,
-    completed ? 'Selesai • main lagi' : 'Titik misi',
-    zone.color,
-    completed
+
+  useEffect(
+    () => () => {
+      // Pastikan kursor tidak "nyangkut" saat komponen dilepas.
+      document.body.style.cursor = '';
+    },
+    []
   );
+
+  const setHover = (value: boolean) => {
+    hovered.current = value;
+    document.body.style.cursor = value ? 'pointer' : '';
+  };
+  const label = useZoneLabelTexture(zone.icon, zone.name, completed ? 'Misi selesai' : 'Titik misi', zone.color, completed);
   const facing = Math.atan2(-zone.position[0], -zone.position[2]);
 
   useFrame((state) => {
@@ -46,14 +56,26 @@ export const ZoneMarker: React.FC<ZoneMarkerProps> = ({ zone, completed = false 
         state.camera.position.z - zone.position[2]
       );
       const closeness = THREE.MathUtils.clamp((14 - distance) / 10, 0, 1);
-      const scale = 1 - closeness * 0.42;
+      const scale = (1 - closeness * 0.42) * (hovered.current ? 1.09 : 1);
       labelAnchor.current.scale.setScalar(scale);
       labelAnchor.current.position.y = 5.35 - closeness * 1.15;
     }
   });
 
   return (
-    <group position={zone.position} rotation-y={facing}>
+    <group
+      position={zone.position}
+      rotation-y={facing}
+      onClick={(event) => {
+        event.stopPropagation();
+        onSelect?.();
+      }}
+      onPointerOver={(event) => {
+        event.stopPropagation();
+        setHover(true);
+      }}
+      onPointerOut={() => setHover(false)}
+    >
       {/* Formasi alam sesuai jenis bencana */}
       <ZoneDiorama zoneId={zone.id} completed={completed} />
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   CheckCircle2,
   ChevronLeft,
@@ -9,7 +9,7 @@ import {
   Lightbulb,
   ListChecks,
   Play,
-  RefreshCw,
+  RotateCcw,
   Target,
   X,
 } from 'lucide-react';
@@ -21,26 +21,103 @@ import { ZONE_INFO } from './zoneInfo';
 // Samakan dengan komponen lain: cast agar tipe framer-motion tidak bentrok.
 const MotionDiv = motion.div as any;
 
-const ZONE_PHOTOS: Partial<Record<DisasterType, string[]>> = {
+interface ZonePhoto {
+  /** URL langsung berkas di Wikimedia Commons (sudah diverifikasi). */
+  src: string;
+  alt: string;
+  /** Nama kejadian + lokasi, ditampilkan sebagai penjelasan singkat. */
+  caption: string;
+  /** Kredit pembuat/lisensi sesuai metadata Wikimedia Commons. */
+  credit: string;
+}
+
+/**
+ * Galeri 3 foto dokumenter kejadian nyata DI INDONESIA untuk tiap zona.
+ * Seluruh berkas berasal dari Wikimedia Commons dan dipilih dari kategori
+ * bencana Indonesia (BNPB, Badan Geologi, Antara, dan mitra lokal).
+ * Siswa bisa bergeser lewat tombol panah atau indikator titik sebelum
+ * menekan tombol "Mulai Misi".
+ */
+const ZONE_PHOTOS: Record<DisasterType, ZonePhoto[]> = {
   EARTHQUAKE: [
-    '/assets/earthquake-road-1.jpg',
-    '/assets/earthquake-city-2.jpg',
-    '/assets/earthquake-road-3.jpg',
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/3/3b/Cianjur_earthquake_damage_1.jpg',
+      alt: 'Bangunan warga roboh akibat gempa Cianjur 2022 di Jawa Barat',
+      caption: 'Gempa Cianjur 2022 · Jawa Barat',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/7/74/Cianjur_earthquake_damage_3.jpg',
+      alt: 'Rumah dan bangunan rusak akibat gempa di Kabupaten Cianjur, Jawa Barat',
+      caption: 'Kerusakan bangunan · Cianjur',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Cianjur_earthquake_damage_4.jpg',
+      alt: 'Tim SAR mengevakuasi korban dari bangunan yang roboh akibat gempa Cianjur',
+      caption: 'Evakuasi tim SAR · Cianjur',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
   ],
   FLOOD: [
-    '/assets/flood-1.jpg',
-    '/assets/flood-2.jpg',
-    '/assets/flood-3.jpg',
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/2/22/Banjir_Bandang_Luwu_2020.png',
+      alt: 'Dampak banjir bandang yang melanda Kabupaten Luwu, Sulawesi Selatan, tahun 2020',
+      caption: 'Banjir Bandang Luwu 2020 · Sulawesi Selatan',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/0/0d/Banjir_Bandang_di_Malampah_Setelah_Gempa_Pasaman_Barat_2022.jpg',
+      alt: 'Banjir bandang di Malampah, Pasaman Barat, Sumatra Barat, tahun 2022',
+      caption: 'Banjir bandang Malampah · Sumatra Barat',
+      credit: 'Foto: Badan Geologi ESDM / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Rumah-rumah_warga_masih_terendam_air_paska_banjir_bandang_Gorontalo_2024.jpg',
+      alt: 'Rumah warga masih terendam air setelah banjir bandang Gorontalo 2024',
+      caption: 'Banjir bandang Gorontalo 2024',
+      credit: 'Foto: Sandy Syafrudin Nina / Wikimedia Commons (CC BY 4.0)',
+    },
   ],
   LANDSLIDE: [
-    '/assets/landslide-1.jpg',
-    '/assets/landslide-2.jpg',
-    '/assets/landslide-3.jpg',
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/4/45/Longsor_Sumedang%2C_Jawa_Barat.jpg',
+      alt: 'Permukiman warga tertimpa tanah longsor di Sumedang, Jawa Barat, tahun 2021',
+      caption: 'Longsor Sumedang 2021 · Jawa Barat',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Longsor_Kilometer_171_Tanah_Bumbu.jpg',
+      alt: 'Ruas jalan tertutup material tanah longsor di Kilometer 171 Tanah Bumbu',
+      caption: 'Longsor Tanah Bumbu · Kalimantan Selatan',
+      credit: 'Foto: Radio Rakyat Indonesia Banjarmasin / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/f/f7/Tebing_longsor_di_Kec_Peunaron_Aceh_Timur_051225_%281%29.jpg',
+      alt: 'Tebing longsor menutup jalan di Kecamatan Peunaron, Aceh Timur',
+      caption: 'Tebing longsor · Aceh Timur',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
   ],
   VOLCANO: [
-    '/assets/volcano-1.jpg',
-    '/assets/volcano-2.jpg',
-    '/assets/volcano-3.jpg',
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/0/02/2021_Semeru_Eruption_from_Oro_Oro_Ombo.jpg',
+      alt: 'Awan abu tebal saat erupsi Gunung Semeru 2021 terlihat dari Oro Oro Ombo',
+      caption: 'Erupsi Gunung Semeru 2021 · Jawa Timur',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/d/d3/Ratusan_rumah_tertimbun_abu_vulkanik_erupsi_gunung_Semeru.jpg',
+      alt: 'Ratusan rumah warga di lereng Gunung Semeru tertimbun abu vulkanik',
+      caption: 'Abu vulkanik Semeru · Lumajang',
+      credit: 'Foto: Antara TV / Wikimedia Commons (CC BY 3.0)',
+    },
+    {
+      src: 'https://upload.wikimedia.org/wikipedia/commons/b/ba/Aerial_view_of_lahar_damage_from_Mount_Semeru_eruption.jpg',
+      alt: 'Pemandangan udara kawasan permukiman yang rusak akibat lahar Gunung Semeru',
+      caption: 'Dampak lahar Semeru · Lumajang',
+      credit: 'Foto: BNPB / Wikimedia Commons (Public Domain)',
+    },
   ],
 };
 
@@ -71,12 +148,28 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
   playSound,
 }) => {
   const info = ZONE_INFO[zone.id];
-  const facts = WORLD_FACTS[zone.id];
   const photos = ZONE_PHOTOS[zone.id];
-  const [photoIndex, setPhotoIndex] = useState(0);
-  const [photoDirection, setPhotoDirection] = useState(1);
+  const facts = WORLD_FACTS[zone.id];
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
+
+  // Galeri foto: mulai dari foto pertama setiap kali zona berbeda dibuka.
+  const [photoIndex, setPhotoIndex] = useState(0);
+  const [brokenPhotos, setBrokenPhotos] = useState<string[]>([]);
+  const photo = photos[photoIndex];
+
+  useEffect(() => {
+    setPhotoIndex(0);
+    setBrokenPhotos([]);
+  }, [zone.id]);
+
+  const showPhoto = (next: number) => {
+    setPhotoIndex(((next % photos.length) + photos.length) % photos.length);
+  };
+
+  const markBroken = (src: string) => {
+    setBrokenPhotos((prev) => (prev.includes(src) ? prev : [...prev, src]));
+  };
 
   const handleClose = () => {
     playSound?.('click');
@@ -84,15 +177,9 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
   };
 
   const handleStart = () => {
+    // Zona selesai tetap bisa dimainkan ulang (replay kapan saja).
     playSound?.('click');
     onStartMission(zone.id);
-  };
-
-  const handlePhotoChange = (direction: number) => {
-    if (!photos?.length) return;
-    playSound?.('click');
-    setPhotoDirection(direction >= 0 ? 1 : -1);
-    setPhotoIndex((current) => (current + direction + photos.length) % photos.length);
   };
 
   // Esc menutup kartu ini saja. Listener capture + stopPropagation mencegah
@@ -174,120 +261,125 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
               background: `linear-gradient(150deg, ${zone.color} 0%, #172033 118%)`,
             }}
           >
-            {photos ? (
-              <div className="absolute inset-0">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.img
-                    key={photos[photoIndex]}
-                    src={photos[photoIndex]}
-                    alt={`${info.title}, foto ${photoIndex + 1} dari ${photos.length}`}
-                    initial={{ opacity: 0, x: photoDirection * 28 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: photoDirection * -28 }}
-                    transition={{ duration: 0.22, ease: 'easeOut' }}
-                    className="absolute inset-0 h-full w-full object-cover"
-                  />
-                </AnimatePresence>
-                <div
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-b from-slate-950/20 via-transparent to-slate-950/85"
-                  aria-hidden="true"
+            {/* Galeri foto dokumenter kejadian nyata di Indonesia */}
+            <AnimatePresence initial={false}>
+              {!brokenPhotos.includes(photo.src) ? (
+                <motion.img
+                  key={photo.src}
+                  src={photo.src}
+                  alt={photo.alt}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading={photoIndex === 0 ? 'eager' : 'lazy'}
+                  decoding="async"
+                  onError={() => markBroken(photo.src)}
                 />
+              ) : (
+                <MotionDiv
+                  key={`fallback-${photo.src}`}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-white/85"
+                >
+                  <span className="text-6xl" role="img" aria-label={info.title}>
+                    {zone.icon}
+                  </span>
+                  <span className="px-4 text-center text-xs font-bold">
+                    Foto belum tersedia · {photo.caption}
+                  </span>
+                </MotionDiv>
+              )}
+            </AnimatePresence>
+            <div
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background: `linear-gradient(160deg, ${zone.color}a6 0%, rgba(15,23,42,0.28) 46%, rgba(15,23,42,0.88) 100%)`,
+              }}
+              aria-hidden="true"
+            />
 
+            {/* Nama kejadian + kredit foto, berganti mengikuti foto aktif */}
+            <div className="absolute left-3 top-3 z-20 max-w-[74%] rounded-xl bg-slate-950/55 px-2.5 py-1.5 backdrop-blur-sm">
+              <p className="text-[10px] font-black leading-tight text-white sm:text-[11px]">
+                {photo.caption}{' '}
+                <span className="font-bold text-white/60">
+                  ({photoIndex + 1}/{photos.length})
+                </span>
+              </p>
+              <p className="mt-0.5 text-[8px] font-bold leading-tight text-white/70 sm:text-[9px]">
+                {photo.credit}
+              </p>
+            </div>
+
+            {/* Tombol geser kiri/kanan + indikator titik */}
+            {photos.length > 1 && (
+              <>
                 <button
                   type="button"
-                  onClick={() => handlePhotoChange(-1)}
-                  className="absolute left-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-950/70 active:scale-95"
-                  aria-label="Foto sebelumnya"
+                  onClick={() => showPhoto(photoIndex - 1)}
+                  className="absolute left-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition hover:bg-slate-950/75 focus-visible:ring-4 focus-visible:ring-white/50 active:scale-90"
+                  aria-label="Lihat foto sebelumnya"
                   title="Foto sebelumnya"
                 >
-                  <ChevronLeft size={22} />
+                  <ChevronLeft size={20} />
                 </button>
                 <button
                   type="button"
-                  onClick={() => handlePhotoChange(1)}
-                  className="absolute right-3 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full border border-white/70 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition-colors hover:bg-slate-950/70 active:scale-95"
-                  aria-label="Foto berikutnya"
+                  onClick={() => showPhoto(photoIndex + 1)}
+                  className="absolute right-2 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-white/50 bg-slate-950/45 text-white shadow-lg backdrop-blur-sm transition hover:bg-slate-950/75 focus-visible:ring-4 focus-visible:ring-white/50 active:scale-90"
+                  aria-label="Lihat foto berikutnya"
                   title="Foto berikutnya"
                 >
-                  <ChevronRight size={22} />
+                  <ChevronRight size={20} />
                 </button>
-
-                <div className="absolute inset-x-0 bottom-0 z-10 px-5 pb-5 pt-16 text-white sm:px-6 sm:pb-8">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/80 sm:text-xs">
-                    Zona {info.code}
-                  </p>
-                  <p className="font-display mt-1 text-2xl font-black leading-tight drop-shadow-sm sm:text-3xl">
-                    {info.title}
-                  </p>
-                  <div className="mt-3 flex items-center gap-1.5" aria-label={`Foto ${photoIndex + 1} dari ${photos.length}`}>
-                    {photos.map((photo, index) => (
-                      <button
-                        key={photo}
-                        type="button"
-                        onClick={() => {
-                          playSound?.('click');
-                          setPhotoDirection(index >= photoIndex ? 1 : -1);
-                          setPhotoIndex(index);
-                        }}
-                        className={`h-2 rounded-full transition-all ${index === photoIndex ? 'w-7 bg-white' : 'w-2 bg-white/55 hover:bg-white/80'}`}
-                        aria-label={`Buka foto ${index + 1}`}
-                        aria-current={index === photoIndex ? 'true' : undefined}
-                      />
-                    ))}
-                  </div>
-                  <p className="mt-1.5 text-[9px] font-bold text-white/55">
-                    Foto kejadian nyata · Wikimedia Commons
-                  </p>
-                </div>
-              </div>
-            ) : (
-              <>
-                {/* Pola lingkaran ringan untuk zona yang belum memiliki foto. */}
-                <div
-                  className="pointer-events-none absolute inset-0 opacity-40"
-                  style={{
-                    backgroundImage:
-                      'radial-gradient(circle at 18% 18%, rgba(255,255,255,0.55) 0, transparent 34%), radial-gradient(circle at 82% 78%, rgba(255,255,255,0.35) 0, transparent 36%)',
-                  }}
-                  aria-hidden="true"
-                />
-                <div
-                  className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full border-[18px] border-white/10"
-                  aria-hidden="true"
-                />
-                <div
-                  className="pointer-events-none absolute -bottom-14 -left-12 h-48 w-48 rounded-full border-[22px] border-white/10"
-                  aria-hidden="true"
-                />
-
-                <div className="relative flex items-center gap-4 p-4 text-white sm:flex-col sm:gap-5 sm:p-6 sm:text-center">
-                  <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-[1.5rem] border-4 border-white/35 bg-white/15 shadow-2xl sm:h-40 sm:w-40 sm:rounded-[2rem]">
-                    <div className="absolute inset-2 rounded-[1.1rem] border border-white/25 sm:inset-3 sm:rounded-[1.5rem]" />
-                    <span
-                      className="text-6xl leading-none drop-shadow-lg sm:text-8xl"
-                      role="img"
-                      aria-label={info.title}
-                    >
-                      {zone.icon}
-                    </span>
-                  </div>
-
-                  <div className="min-w-0 text-left sm:text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/75 sm:text-xs">
-                      Zona {info.code}
-                    </p>
-                    <p className="font-display mt-0.5 text-2xl font-black leading-tight drop-shadow-sm sm:mt-1 sm:text-3xl">
-                      {info.title}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="absolute bottom-3 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-white/10 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/80 sm:flex">
-                  <Target size={12} />
-                  Jelajah Alam Siaga
+                <div className="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 sm:bottom-12">
+                  {photos.map((item, index) => (
+                    <button
+                      key={item.src}
+                      type="button"
+                      onClick={() => showPhoto(index)}
+                      aria-label={`Lihat foto ${index + 1} dari ${photos.length}`}
+                      aria-current={index === photoIndex ? 'true' : undefined}
+                      className={`h-2.5 rounded-full border transition-all ${
+                        index === photoIndex
+                          ? 'w-7 border-white bg-white'
+                          : 'w-2.5 border-white/70 bg-white/30 hover:bg-white/60'
+                      }`}
+                    />
+                  ))}
                 </div>
               </>
             )}
+
+            <div className="relative flex items-center gap-4 text-white sm:flex-col sm:gap-5 sm:text-center">
+              <div className="relative flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-[1.5rem] border-4 border-white/40 bg-white/20 shadow-2xl backdrop-blur-sm sm:h-40 sm:w-40 sm:rounded-[2rem]">
+                <div className="absolute inset-2 rounded-[1.1rem] border border-white/30 sm:inset-3 sm:rounded-[1.5rem]" />
+                <span
+                  className="text-6xl leading-none drop-shadow-lg sm:text-8xl"
+                  role="img"
+                  aria-label={info.title}
+                >
+                  {zone.icon}
+                </span>
+              </div>
+
+              <div className="min-w-0 text-left drop-shadow-md sm:text-center">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-white/85 sm:text-xs">
+                  Zona {info.code}
+                </p>
+                <p className="font-display mt-0.5 text-2xl font-black leading-tight sm:mt-1 sm:text-3xl">
+                  {info.title}
+                </p>
+              </div>
+            </div>
+
+            <div className="absolute bottom-3 left-1/2 hidden -translate-x-1/2 items-center gap-1.5 whitespace-nowrap rounded-full border border-white/25 bg-slate-950/40 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/85 backdrop-blur-sm sm:flex">
+              <Target size={12} />
+              Jelajah Alam Siaga
+            </div>
           </div>
 
           {/* ---------------- Panel teks kanan ---------------- */}
@@ -308,16 +400,6 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
               </h2>
               <p className="mt-2 text-sm font-semibold leading-relaxed text-slate-600 sm:text-base">
                 {info.intro}
-              </p>
-            </div>
-
-            <div className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 p-3 sm:p-3.5">
-              <p className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-indigo-600">
-                <Target size={13} />
-                TUJUAN PEMBELAJARAN
-              </p>
-              <p className="mt-1.5 text-[13px] font-bold leading-snug text-slate-700 sm:text-sm">
-                Setelah menyelesaikan zona ini, kamu diharapkan mampu {info.learningObjective.charAt(0).toLowerCase() + info.learningObjective.slice(1)}
               </p>
             </div>
 
@@ -375,11 +457,7 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
                 <CheckCircle2 size={18} className="flex-shrink-0 text-slate-300" />
               )}
               <span className="min-w-0 flex-1">
-                {completed
-                  ? 'Misi selesai — skor terbaikmu tersimpan. Main lagi kapan saja!'
-                  : read
-                    ? 'Papan sudah dibaca'
-                    : 'Membuka papan informasi...'}
+                {read ? 'Papan sudah dibaca' : 'Membuka papan informasi...'}
               </span>
               {completed && (
                 <span className="flex flex-shrink-0 items-center gap-1 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase tracking-wide text-white">
@@ -393,21 +471,21 @@ export const ZoneInfoCard: React.FC<ZoneInfoCardProps> = ({
               <button
                 type="button"
                 onClick={handleStart}
-                className="flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-4 text-base font-black text-white shadow-lg shadow-emerald-200 transition-all hover:bg-emerald-600 active:scale-[0.98]"
-                title={completed ? 'Main lagi misi zona ini' : 'Mulai misi zona ini'}
+                className={`flex min-h-[52px] w-full items-center justify-center gap-2 rounded-2xl px-4 text-base font-black text-white shadow-lg transition-all active:scale-[0.98] ${
+                  completed
+                    ? 'bg-slate-600 shadow-slate-200 hover:bg-slate-700'
+                    : 'bg-emerald-500 shadow-emerald-200 hover:bg-emerald-600'
+                }`}
+                title={completed ? `Mainkan ulang misi ${info.title}` : `Mulai misi ${info.title}`}
               >
-                {completed ? (
-                  <>
-                    <RefreshCw size={19} />
-                    Main Lagi
-                  </>
-                ) : (
-                  <>
-                    <Play size={20} fill="currentColor" />
-                    Mulai Misi
-                  </>
-                )}
+                {completed ? <RotateCcw size={20} /> : <Play size={20} fill="currentColor" />}
+                {completed ? 'Mainkan Lagi' : 'Mulai Misi'}
               </button>
+              {completed && (
+                <p className="text-center text-[11px] font-bold text-emerald-600">
+                  Misi sudah selesai — tetap bisa diulang kapan saja. 🔁
+                </p>
+              )}
 
               <button
                 type="button"

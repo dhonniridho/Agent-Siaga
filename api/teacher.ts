@@ -197,6 +197,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         teams.map(async (row: any) => ({
           id: Number(row.id),
           name: row.name,
+          studentName: row.student_name || null,
           avatarId: row.avatar_id,
           totalScore: Number(row.total_score) || 0,
           missionsDone: Number(row.missions_done) || 0,
@@ -345,6 +346,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
           team: {
             id: Number(team.id),
             name: team.name,
+            studentName: team.student_name || null,
             avatarId: team.avatar_id,
             className: classRow?.name || '-',
             classCode: classRow?.code || '-',

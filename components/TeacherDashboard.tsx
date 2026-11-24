@@ -298,7 +298,7 @@ const AuthPanel: React.FC<{
         </div>
 
         <p className="mt-5 text-center text-xs font-medium text-indigo-200/50">
-          Data tersimpan lokal di server SQLite sekolah.
+          Data tersimpan di database server.
         </p>
       </div>
     </div>
@@ -1105,8 +1105,8 @@ export const TeacherDashboard: React.FC = () => {
                           </span>
                           <div className="min-w-0">
                             <p className="truncate font-black text-slate-700">{team.name}</p>
-                            <p className="text-[10px] font-medium text-slate-400">
-                              Terakhir aktif {formatDate(team.lastSeen)}
+                            <p className="truncate text-[10px] font-medium text-slate-400">
+                              {team.studentName ? `${team.studentName} · ` : ''}Terakhir aktif {formatDate(team.lastSeen)}
                             </p>
                           </div>
                         </div>

@@ -95,16 +95,18 @@ export async function getTeamProgress(teamId: number) {
   const rows = await sql`
     SELECT disaster_type,
            MAX(total_score)::int AS best_score,
+           MAX(recovery_score)::int AS best_recovery_score,
            MAX(created_at) AS last_played,
            COUNT(*)::int AS attempts
     FROM results
     WHERE team_id = ${teamId}
     GROUP BY disaster_type
   `;
-  const progress: Record<string, { bestScore: number; attempts: number; lastPlayed: string }> = {};
+  const progress: Record<string, { bestScore: number; bestRecoveryScore: number; attempts: number; lastPlayed: string }> = {};
   for (const row of rows) {
     progress[row.disaster_type] = {
       bestScore: Number(row.best_score) || 0,
+      bestRecoveryScore: Number(row.best_recovery_score) || 0,
       attempts: Number(row.attempts) || 0,
       lastPlayed: String(row.last_played || ''),
     };
@@ -159,12 +161,14 @@ export async function initializeDatabase() {
       id SERIAL PRIMARY KEY,
       class_id INTEGER REFERENCES classes(id) ON DELETE SET NULL,
       name TEXT NOT NULL,
+      student_name TEXT,
       avatar_id TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       UNIQUE(class_id, name)
     )
   `;
+  await sql`ALTER TABLE teams ADD COLUMN IF NOT EXISTS student_name TEXT`;
   await sql`
     CREATE TABLE IF NOT EXISTS results (
       id SERIAL PRIMARY KEY,

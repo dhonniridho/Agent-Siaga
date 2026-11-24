@@ -9,17 +9,6 @@ export const AVATARS: Avatar[] = [
   { id: '6', name: 'Agent Scout', icon: '🕵️', color: 'amber', bgGradient: 'from-yellow-400 to-amber-600' },
 ];
 
-export const LEARNING_OBJECTIVES_INTRO =
-  'Sejalan dengan permasalahan yang telah diidentifikasi, tujuan pengembangan AGENT SIAGA adalah:';
-
-export const LEARNING_OBJECTIVES = [
-  'Membekali peserta didik sekolah dasar dengan pemahaman mitigasi bencana gempa bumi, banjir bandang, dan tanah longsor melalui media pembelajaran digital yang interaktif dan kontekstual.',
-  'Mengembangkan game edukasi AGENT SIAGA sebagai media pembelajaran IPAS yang sesuai dengan karakteristik peserta didik serta kondisi lingkungan sekolah yang berada di kawasan rawan bencana.',
-  'Mendukung pembentukan karakter tanggap bencana, peduli lingkungan, dan bertanggung jawab melalui pengalaman belajar berbasis simulasi.',
-  'Menumbuhkan kemampuan literasi digital peserta didik seiring dengan pemanfaatan teknologi dalam proses pembelajaran.',
-  'Mengkaji potensi AGENT SIAGA sebagai media pembelajaran yang dapat mendukung penguatan pendidikan mitigasi bencana di tingkat sekolah dasar.',
-];
-
 // Items pool - EXPANDED
 const ITEMS: Record<string, Item> = {
   // CORRECT ITEMS (Survival Priority)
@@ -82,7 +71,7 @@ export const LEVELS: Record<string, LevelConfig> = {
     title: 'Gempa Bumi',
     location: 'Padang, Sumatera Barat',
     color: 'amber',
-    description: 'Tanah berguncang! Lewati lemari miring & lampu jatuh, lalu berlindung di bawah meja.',
+    description: 'Tanah berguncang! Bantu warga evakuasi dan berlindung.',
     bagItems: [ITEMS.FLASHLIGHT, ITEMS.FIRSTAID, ITEMS.GAMEBOY, ITEMS.WATER, ITEMS.WHISTLE, ITEMS.TOY, ITEMS.CANNED, ITEMS.PILLOW, ITEMS.RADIO, ITEMS.POWERBANK, ITEMS.LAPTOP, ITEMS.SNACK],
     quizQuestions: [
       {
@@ -401,3 +390,10 @@ export const WORLD_FACTS: Record<DisasterType, { icon: string; title: string; fa
     ],
   },
 };
+
+export const LEADERBOARD_DATA = [
+  { name: "Tim Garuda (5A)", score: 1250, badge: "Master Agent" },
+  { name: "Regu Melati (4B)", score: 1100, badge: "Senior Agent" },
+  { name: "Kamu", score: 0, badge: "Rookie" },
+  { name: "Tim Harimau (6C)", score: 950, badge: "Agent" },
+];

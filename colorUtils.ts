@@ -89,7 +89,7 @@ export const LEVEL_COLOR_CLASSES = {
     textDark: 'text-stone-800',
     shadow: 'shadow-stone-700',
     topBar: 'bg-stone-500',
-  },
+  }
 } as const;
 
 export const AVATAR_STYLE_CLASSES = {

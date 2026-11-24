@@ -45,6 +45,7 @@ db.exec(`
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     class_id INTEGER REFERENCES classes(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
+    student_name TEXT,
     avatar_id TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     last_seen TEXT NOT NULL DEFAULT (datetime('now')),
@@ -72,6 +73,10 @@ db.exec(`
 const resultColumns = db.prepare('PRAGMA table_info(results)').all();
 if (!resultColumns.some((column) => column.name === 'duration_seconds')) {
   db.exec('ALTER TABLE results ADD COLUMN duration_seconds INTEGER NOT NULL DEFAULT 0');
+}
+const teamColumns = db.prepare('PRAGMA table_info(teams)').all();
+if (!teamColumns.some((column) => column.name === 'student_name')) {
+  db.exec('ALTER TABLE teams ADD COLUMN student_name TEXT');
 }
 
 /* ------------------------------------------------------------------ */
@@ -214,6 +219,7 @@ export function getTeamProgress(teamId) {
     .prepare(
       `SELECT disaster_type,
               MAX(total_score) AS best_score,
+              MAX(recovery_score) AS best_recovery_score,
               MAX(created_at) AS last_played,
               COUNT(*) AS attempts
        FROM results
@@ -226,6 +232,7 @@ export function getTeamProgress(teamId) {
   for (const row of rows) {
     progress[row.disaster_type] = {
       bestScore: Number(row.best_score) || 0,
+      bestRecoveryScore: Number(row.best_recovery_score) || 0,
       attempts: Number(row.attempts) || 0,
       lastPlayed: row.last_played,
     };
