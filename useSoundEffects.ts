@@ -21,9 +21,9 @@ type SoundType =
   | 'splash'
   | 'whoosh';
 
-export const useSoundEffects = (initialEnabled = true) => {
+export const useSoundEffects = () => {
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const enabledRef = useRef(initialEnabled);
+  const enabledRef = useRef(true);
   const bgmIntervalRef = useRef<number | null>(null);
   const bgmNodesRef = useRef<{ osc: OscillatorNode; gain: GainNode; filter?: BiquadFilterNode }[]>([]);
 
@@ -480,15 +480,6 @@ export const useSoundEffects = (initialEnabled = true) => {
     enabledRef.current = !enabledRef.current;
     if (!enabledRef.current) {
       stopBGM();
-      // Tutup context agar semua oscillator/buffer yang sudah terjadwal ikut
-      // terputus. Saat suara dinyalakan lagi, context baru dibuat kembali.
-      const audioContext = audioCtxRef.current;
-      audioCtxRef.current = null;
-      if (audioContext && audioContext.state !== 'closed') {
-        void audioContext.close().catch(() => {
-          // Audio tidak boleh mengganggu alur permainan jika browser menolak close.
-        });
-      }
     } else {
       startBGM();
     }

@@ -4,7 +4,6 @@ import * as THREE from 'three';
 import {
   BASE_CAMP,
   FLOWER_SPOTS,
-  isInsideInfoBoardClearZone,
   ROCKS,
   TRAILS,
   TREES,
@@ -208,7 +207,6 @@ const GrassField: React.FC = () => {
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius + 3;
       if (Math.abs(x) > WORLD_BOUNDS.maxX - 2 || Math.abs(z) > WORLD_BOUNDS.maxZ - 2) continue;
-      if (isInsideInfoBoardClearZone(x, z, 0.2)) continue;
       // Jangan menutupi jalur utama.
       if (Math.abs(x) < 2.3 && z > 4 && z < 24) continue;
       position.set(x, 0.16, z);
@@ -640,12 +638,12 @@ export const NatureEnvironment: React.FC = () => {
       <Birds />
 
       {/* Pepohonan */}
-      {TREES.filter((tree) => !isInsideInfoBoardClearZone(tree.x, tree.z, tree.scale * 1.5)).map((tree, index) => (
+      {TREES.map((tree, index) => (
         <Tree key={`${tree.x}-${tree.z}`} spot={tree} index={index} />
       ))}
 
       {/* Batu */}
-      {ROCKS.filter((rock) => !isInsideInfoBoardClearZone(rock.x, rock.z, rock.scale)).map((rock, index) => (
+      {ROCKS.map((rock, index) => (
         <RockFormation key={`${rock.x}-${rock.z}`} spot={rock} index={index} />
       ))}
 
@@ -663,12 +661,12 @@ export const NatureEnvironment: React.FC = () => {
         [19, 16, 0.9],
         [-2, 22, 0.75],
         [14, 24, 0.8],
-      ].filter(([x, z, scale]) => !isInsideInfoBoardClearZone(x, z, scale * 0.7)).map(([x, z, scale], index) => (
+      ].map(([x, z, scale], index) => (
         <Bush key={index} position={[x, 0, z]} scale={scale} tint={index % 2 === 0 ? '#3f7d3f' : '#4a8a45'} />
       ))}
 
       {/* Bunga */}
-      {FLOWER_SPOTS.filter((flower) => !isInsideInfoBoardClearZone(flower.x, flower.z, 0.4)).map((flower, index) => (
+      {FLOWER_SPOTS.map((flower, index) => (
         <FlowerPatch key={`${flower.x}-${flower.z}`} x={flower.x} z={flower.z} color={flower.color} index={index} />
       ))}
 

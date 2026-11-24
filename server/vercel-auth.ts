@@ -40,35 +40,19 @@ function sessionSecret() {
     .digest();
 }
 
-export function signSession(teacherId: number) {
-  const payload = Buffer.from(
-    JSON.stringify({
-      teacherId,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
-    })
-  ).toString('base64url');
+function signToken(payload: Record<string, number>) {
+  const encoded = Buffer.from(JSON.stringify(payload)).toString('base64url');
   const signature = crypto
     .createHmac('sha256', sessionSecret())
-    .update(payload)
+    .update(encoded)
     .digest('base64url');
-  return `${payload}.${signature}`;
+  return `${encoded}.${signature}`;
 }
 
-export function signTeamToken(teamId: number) {
-  const payload = Buffer.from(
-    JSON.stringify({
-      teamId,
-      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
-    })
-  ).toString('base64url');
-  const signature = crypto
-    .createHmac('sha256', sessionSecret())
-    .update(payload)
-    .digest('base64url');
-  return `${payload}.${signature}`;
-}
-
-export function verifyTeamToken(token: string | undefined): number | null {
+function verifyToken(
+  token: string | undefined,
+  idKey: 'teacherId' | 'teamId',
+) {
   if (!token?.includes('.')) return null;
   const [payload, signature] = token.split('.');
   const expected = crypto
@@ -84,10 +68,32 @@ export function verifyTeamToken(token: string | undefined): number | null {
   try {
     const value = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
     if (!value.exp || value.exp < Math.floor(Date.now() / 1000)) return null;
-    return Number(value.teamId) || null;
+    return Number(value[idKey]) || null;
   } catch {
     return null;
   }
+}
+
+export function signSession(teacherId: number) {
+  return signToken({
+    teacherId,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 7,
+  });
+}
+
+export function signTeamToken(teamId: number) {
+  return signToken({
+    teamId,
+    exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+  });
+}
+
+export function verifyTeamToken(token: string | undefined) {
+  return verifyToken(token, 'teamId');
+}
+
+export function verifySession(token: string | undefined) {
+  return verifyToken(token, 'teacherId');
 }
 
 export async function getTeamProgress(teamId: number) {
@@ -110,28 +116,6 @@ export async function getTeamProgress(teamId: number) {
     };
   }
   return progress;
-}
-
-export function verifySession(token: string | undefined) {
-  if (!token?.includes('.')) return null;
-  const [payload, signature] = token.split('.');
-  const expected = crypto
-    .createHmac('sha256', sessionSecret())
-    .update(payload)
-    .digest('base64url');
-  if (
-    signature.length !== expected.length ||
-    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
-  ) {
-    return null;
-  }
-  try {
-    const value = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
-    if (!value.exp || value.exp < Math.floor(Date.now() / 1000)) return null;
-    return Number(value.teacherId) || null;
-  } catch {
-    return null;
-  }
 }
 
 export async function initializeDatabase() {
@@ -179,9 +163,7 @@ export async function initializeDatabase() {
     )
   `;
 
-  const email = (
-    process.env.SEED_TEACHER_EMAIL || 'guru@agentsiaga.id'
-  ).toLowerCase();
+  const email = (process.env.SEED_TEACHER_EMAIL || 'guru@agentsiaga.id').toLowerCase();
   const password = process.env.SEED_TEACHER_PASSWORD || 'siaga123';
   const name = process.env.SEED_TEACHER_NAME || 'Guru Siaga';
   const classCode = (process.env.SEED_CLASS_CODE || 'SIAGA6A').toUpperCase();
@@ -215,35 +197,26 @@ export function readCookie(req: any, name: string) {
 export function setCookie(res: any, value: string) {
   res.setHeader(
     'Set-Cookie',
-    `siaga_session=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`
+    `siaga_session=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${60 * 60 * 24 * 7}`,
   );
 }
 
 export function clearCookie(res: any) {
   res.setHeader(
     'Set-Cookie',
-    'siaga_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0'
+    'siaga_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0',
   );
 }
 
 export function sendJson(res: any, status: number, body: unknown) {
-  try {
-    if (typeof res.status === 'function' && typeof res.json === 'function') {
-      res.status(status).json(body);
-      return;
-    }
-  } catch (err) {
-    console.error('[sendJson helper error]', err);
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    res.status(status).json(body);
+    return;
   }
-
-  try {
-    res.statusCode = status;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store');
-    res.end(JSON.stringify(body));
-  } catch (err) {
-    console.error('[sendJson fallback error]', err);
-  }
+  res.statusCode = status;
+  res.setHeader('Content-Type', 'application/json; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-store');
+  res.end(JSON.stringify(body));
 }
 
 export async function readBody(req: any): Promise<Record<string, unknown>> {
@@ -267,14 +240,13 @@ export async function readBody(req: any): Promise<Record<string, unknown>> {
     }
   }
 
-  // Jika Vercel Serverless Function tidak auto-parse body, baca manual stream chunks:
+  const chunks: Buffer[] = [];
+  for await (const chunk of req) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  const raw = Buffer.concat(chunks).toString('utf8');
+  if (!raw.trim()) return {};
   try {
-    const chunks: Buffer[] = [];
-    for await (const chunk of req) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    const raw = Buffer.concat(chunks).toString('utf8');
-    if (!raw.trim()) return {};
     const parsed = JSON.parse(raw);
     return parsed && typeof parsed === 'object' && !Array.isArray(parsed)
       ? (parsed as Record<string, unknown>)
@@ -295,7 +267,7 @@ export async function teacherClasses(teacherId: number) {
     WHERE c.teacher_id = ${teacherId}
     ORDER BY c.id
   `;
-  return rows.map((row) => ({
+  return rows.map((row: DbRow) => ({
     id: Number(row.id),
     name: row.name,
     code: row.code,

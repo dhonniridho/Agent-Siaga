@@ -310,7 +310,7 @@ function drawLabel(icon: string, title: string, subtitle: string, color: string,
   return canvas;
 }
 
-function drawNameTag(_icon: string, name: string, _color: string) {
+function drawNameTag(icon: string, name: string, color: string) {
   const canvas = document.createElement('canvas');
   canvas.width = 512;
   canvas.height = 128;
@@ -318,21 +318,29 @@ function drawNameTag(_icon: string, name: string, _color: string) {
   if (!ctx) return canvas;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.save();
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.25)';
+  ctx.shadowBlur = 10;
+  ctx.shadowOffsetY = 4;
+  roundedRect(ctx, 8, 8, 496, 112, 42);
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+  ctx.fill();
+  ctx.restore();
+
+  roundedRect(ctx, 8, 8, 496, 112, 42);
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = color;
+  ctx.stroke();
 
   ctx.textBaseline = 'middle';
-  ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(15, 23, 42, 0.85)';
-  ctx.shadowBlur = 5;
-  ctx.shadowOffsetY = 2;
+  ctx.textAlign = 'left';
+  ctx.font = '58px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+  ctx.fillText(icon, 28, 66);
 
-  const size = fitText(ctx, name, 460, 46, '800');
+  const size = fitText(ctx, name, 360, 46, '800');
+  ctx.fillStyle = '#0f172a';
   ctx.font = `800 ${size}px system-ui, "Segoe UI", sans-serif`;
-  ctx.lineJoin = 'round';
-  ctx.lineWidth = 6;
-  ctx.strokeStyle = 'rgba(15, 23, 42, 0.9)';
-  ctx.strokeText(name, 256, 66);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillText(name, 256, 66);
+  ctx.fillText(name, 104, 66);
 
   return canvas;
 }
@@ -449,22 +457,6 @@ function wrapLines(ctx: CanvasRenderingContext2D, text: string, maxWidth: number
   return lines;
 }
 
-function getReadableTextColor(background: string): '#0f172a' | '#ffffff' {
-  const match = background.match(/^#([\da-f]{6})$/i);
-  if (!match) return '#ffffff';
-
-  const channels = [0, 2, 4].map((offset) => parseInt(match[1].slice(offset, offset + 2), 16) / 255);
-  const luminance = channels.reduce((total, channel) => {
-    const linear = channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
-    return total + linear;
-  }, 0);
-  // Relative luminance of #0f172a, the dark header/number text color.
-  const darkLuminance = 0.0084;
-  const contrastWithDark = (luminance + 0.05) / (darkLuminance + 0.05);
-  const contrastWithWhite = 1.05 / (luminance + 0.05);
-  return contrastWithDark >= contrastWithWhite ? '#0f172a' : '#ffffff';
-}
-
 function drawFactBoard(title: string, facts: string[], icon: string, color: string) {
   const canvas = document.createElement('canvas');
   canvas.width = 768;
@@ -502,21 +494,33 @@ function drawFactBoard(title: string, facts: string[], icon: string, color: stri
   ctx.fillStyle = color;
   ctx.fill();
 
+  // Sudut paku kecil.
+  [
+    [44, 44],
+    [724, 44],
+    [44, 596],
+    [724, 596],
+  ].forEach(([x, y]) => {
+    ctx.beginPath();
+    ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = '#d6b88a';
+    ctx.fill();
+  });
+
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'left';
   ctx.font = '62px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
   ctx.fillText(icon, 56, 86);
 
   const titleSize = fitText(ctx, title, 520, 48, '800');
-  const headerTextColor = getReadableTextColor(color);
-  ctx.fillStyle = headerTextColor;
+  ctx.fillStyle = '#ffffff';
   ctx.font = `800 ${titleSize}px system-ui, "Segoe UI", sans-serif`;
   ctx.fillText(title, 138, 86);
 
   // Daftar fakta bernomor
   const bodyWidth = 640;
-  const factFont = 32;
-  const lineHeight = 42;
+  const factFont = 29;
+  const lineHeight = 38;
   let y = 176;
   const startY = y;
   const bottomLimit = 572;
@@ -536,7 +540,7 @@ function drawFactBoard(title: string, facts: string[], icon: string, color: stri
     ctx.arc(66, y + 2, 20, 0, Math.PI * 2);
     ctx.fillStyle = color;
     ctx.fill();
-    ctx.fillStyle = headerTextColor;
+    ctx.fillStyle = '#ffffff';
     ctx.font = `800 ${Math.round(24 * shrink)}px system-ui, "Segoe UI", sans-serif`;
     ctx.textAlign = 'center';
     ctx.fillText(String(index + 1), 66, y + 3);

@@ -12,11 +12,12 @@ dist
 dist-ssr
 *.local
 
-# Database lokal guru & siswa
+# Local database files and agent settings
 data/
 *.db
 *.db-shm
 *.db-wal
+.claude/
 
 # Environment variables (never commit real keys)
 .env
@@ -33,4 +34,3 @@ data/
 *.njsproj
 *.sln
 *.sw?
-.claude/

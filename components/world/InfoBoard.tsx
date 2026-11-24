@@ -14,22 +14,9 @@ interface InfoBoardProps {
  * membuka panel HTML agar teks mudah dibaca anak.
  */
 export const InfoBoard: React.FC<InfoBoardProps> = ({ board }) => {
-  const isGuide = board.kind === 'guide';
   const zone = MISSION_ZONES.find((item) => item.id === board.zoneId);
-  const data = isGuide
-    ? {
-        title: 'PANDUAN SIAGA',
-        icon: '🧭',
-        color: '#6366f1',
-        facts: [
-          '🏫 Gempa: jongkok & berlindung',
-          '🌊 Banjir: tas siaga, ke tempat tinggi',
-          '⛰️ Longsor: lari menyamping',
-          '🌋 Gunung api: kenali tanda erupsi',
-        ],
-      }
-    : WORLD_FACTS[board.zoneId as keyof typeof WORLD_FACTS];
-  const color = isGuide ? '#6366f1' : zone?.color || '#4f46e5';
+  const data = WORLD_FACTS[board.zoneId];
+  const color = zone?.color || '#4f46e5';
   const texture = useFactBoardTexture(data.title, data.facts, data.icon, color);
   const wood = useWoodTexture(1, 1);
   const glow = useRef<THREE.Mesh>(null);
@@ -42,15 +29,14 @@ export const InfoBoard: React.FC<InfoBoardProps> = ({ board }) => {
 
   return (
     <group position={board.position} rotation-y={board.rotation}>
-      {/* Tiang kayu tetap menjadi penyangga, tetapi berada di belakang papan
-          agar ujung bulatnya tidak menutupi teks dari arah kamera pemain. */}
+      {/* Tiang kayu */}
       {[-1.02, 1.02].map((x) => (
         <group key={x}>
-          <mesh position={[x, 1.05, -0.18]}>
+          <mesh position={[x, 1.05, 0]}>
             <cylinderGeometry args={[0.1, 0.13, 2.1, 7]} />
             <meshStandardMaterial color="#7a4f2a" roughness={0.95} map={wood} />
           </mesh>
-          <mesh position={[x, 2.12, -0.18]}>
+          <mesh position={[x, 2.12, 0]}>
             <sphereGeometry args={[0.14, 8, 6]} />
             <meshStandardMaterial color="#5c3a1b" roughness={1} />
           </mesh>
@@ -82,6 +68,17 @@ export const InfoBoard: React.FC<InfoBoardProps> = ({ board }) => {
         <planeGeometry args={[2.72, 2.27]} />
         <meshBasicMaterial map={texture} toneMapped={false} />
       </mesh>
+
+      {/* Tali kecil di sudut papan */}
+      {[
+        [-1.02, 3.06],
+        [1.02, 3.06],
+      ].map(([x, y], index) => (
+        <mesh key={index} position={[x, y, 0.1]} rotation-z={index === 0 ? 0.4 : -0.4}>
+          <torusGeometry args={[0.1, 0.025, 6, 10]} />
+          <meshStandardMaterial color="#d6c39a" roughness={0.9} />
+        </mesh>
+      ))}
 
       {/* Garis bercahaya di tanah agar papan mudah ditemukan */}
       <mesh ref={glow} rotation-x={-Math.PI / 2} position={[0, 0.045, 0]}>

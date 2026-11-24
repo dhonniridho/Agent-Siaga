@@ -36,11 +36,9 @@ export interface MissionZone {
 
 export interface InfoBoard {
   id: string;
-  zoneId: DisasterType | 'GUIDE';
+  zoneId: DisasterType;
   position: [number, number, number];
   rotation: number;
-  /** `guide` = papan panduan empat bencana di area spawn. */
-  kind?: 'zone' | 'guide';
 }
 
 export interface Trail {
@@ -146,8 +144,6 @@ export const FLOWER_SPOTS: Array<{ x: number; z: number; color: string }> = [
  * Empat papan ini bagian dari empat lokasi misi.
  */
 export const INFO_BOARDS: InfoBoard[] = [
-  // Papan panduan di area spawn: ringkasan keempat zona bencana.
-  { id: 'board-panduan', zoneId: 'GUIDE', kind: 'guide', position: [3.2, 0, 12.4], rotation: -0.45 },
   { id: 'board-earthquake', zoneId: 'EARTHQUAKE', position: [-8.5, 0, -16], rotation: 0.5 },
   { id: 'board-flood', zoneId: 'FLOOD', position: [10, 0, 5], rotation: -2.3 },
   { id: 'board-landslide', zoneId: 'LANDSLIDE', position: [-9.5, 0, 18], rotation: 2.5 },
@@ -156,16 +152,6 @@ export const INFO_BOARDS: InfoBoard[] = [
 
 /** Jarak maksimal pemain ke papan agar panel fakta terbuka. */
 export const INFO_BOARD_READ_RADIUS = 3;
-
-/** Area pandang dan berdiri yang harus bebas dari dekorasi di depan papan. */
-export const INFO_BOARD_CLEAR_RADIUS = 4;
-
-export function isInsideInfoBoardClearZone(x: number, z: number, padding = 0): boolean {
-  return INFO_BOARDS.some(
-    (board) =>
-      Math.hypot(x - board.position[0], z - board.position[2]) < INFO_BOARD_CLEAR_RADIUS + padding
-  );
-}
 
 /** Tabrakan sederhana berbentuk kotak (AABB) di sumbu XZ. */
 export const COLLIDERS: BoxCollider[] = [
@@ -212,17 +198,14 @@ export const COLLIDERS: BoxCollider[] = [
   // Tebing longsor
   { minX: -28.5, maxX: -17.5, minZ: 10.5, maxZ: 23.5 },
   // Pohon (batang)
-  ...TREES.filter((tree) => !isInsideInfoBoardClearZone(tree.x, tree.z, tree.scale * 1.5)).map((tree) => ({
+  ...TREES.map((tree) => ({
     minX: tree.x - 0.5,
     maxX: tree.x + 0.5,
     minZ: tree.z - 0.5,
     maxZ: tree.z + 0.5,
   })),
   // Batu besar
-  ...ROCKS.filter(
-    (rock) =>
-      rock.scale >= 0.9 && !isInsideInfoBoardClearZone(rock.x, rock.z, rock.scale)
-  ).map((rock) => ({
+  ...ROCKS.filter((rock) => rock.scale >= 0.9).map((rock) => ({
     minX: rock.x - rock.scale * 0.75,
     maxX: rock.x + rock.scale * 0.75,
     minZ: rock.z - rock.scale * 0.75,

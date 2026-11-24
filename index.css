@@ -4,24 +4,6 @@
    Two copies of the same tile sit side by side inside a 200%-wide
    track; shifting the track exactly -50% moves it by one tile width,
    so frame N+1 lines up pixel-perfect with frame 0 — no visible seam. */
-.learning-objectives-scroll {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(99, 102, 241, 0.45) transparent;
-}
-
-.learning-objectives-scroll::-webkit-scrollbar {
-  width: 8px;
-}
-
-.learning-objectives-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.learning-objectives-scroll::-webkit-scrollbar-thumb {
-  border-radius: 999px;
-  background: rgba(99, 102, 241, 0.45);
-}
-
 .scroll-bg-track {
   display: flex;
   height: 100%;
