@@ -5,6 +5,7 @@
     }
   },
   "rewrites": [
+    { "source": "/api/teacher/export.csv", "destination": "/api/teacher/export-csv" },
     { "source": "/guru", "destination": "/index.html" },
     { "source": "/guru/(.*)", "destination": "/index.html" }
   ]

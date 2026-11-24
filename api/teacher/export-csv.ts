@@ -5,7 +5,7 @@ import {
   readCookie,
   sendJson,
   verifySession,
-} from '../../../server/vercel-auth.js';
+} from '../../server/vercel-auth.js';
 
 function csvCell(value: unknown) {
   const text = String(value ?? '');
