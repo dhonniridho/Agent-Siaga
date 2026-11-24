@@ -54,6 +54,64 @@ export function signSession(teacherId: number) {
   return `${payload}.${signature}`;
 }
 
+export function signTeamToken(teamId: number) {
+  const payload = Buffer.from(
+    JSON.stringify({
+      teamId,
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+    })
+  ).toString('base64url');
+  const signature = crypto
+    .createHmac('sha256', sessionSecret())
+    .update(payload)
+    .digest('base64url');
+  return `${payload}.${signature}`;
+}
+
+export function verifyTeamToken(token: string | undefined): number | null {
+  if (!token?.includes('.')) return null;
+  const [payload, signature] = token.split('.');
+  const expected = crypto
+    .createHmac('sha256', sessionSecret())
+    .update(payload)
+    .digest('base64url');
+  if (
+    signature.length !== expected.length ||
+    !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected))
+  ) {
+    return null;
+  }
+  try {
+    const value = JSON.parse(Buffer.from(payload, 'base64url').toString('utf8'));
+    if (!value.exp || value.exp < Math.floor(Date.now() / 1000)) return null;
+    return Number(value.teamId) || null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTeamProgress(teamId: number) {
+  const sql = getSql();
+  const rows = await sql`
+    SELECT disaster_type,
+           MAX(total_score)::int AS best_score,
+           MAX(created_at) AS last_played,
+           COUNT(*)::int AS attempts
+    FROM results
+    WHERE team_id = ${teamId}
+    GROUP BY disaster_type
+  `;
+  const progress: Record<string, { bestScore: number; attempts: number; lastPlayed: string }> = {};
+  for (const row of rows) {
+    progress[row.disaster_type] = {
+      bestScore: Number(row.best_score) || 0,
+      attempts: Number(row.attempts) || 0,
+      lastPlayed: String(row.last_played || ''),
+    };
+  }
+  return progress;
+}
+
 export function verifySession(token: string | undefined) {
   if (!token?.includes('.')) return null;
   const [payload, signature] = token.split('.');
